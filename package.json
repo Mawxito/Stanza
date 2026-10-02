@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler pages dev --kv ORDERS",
-    "deploy": "wrangler pages deploy",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "stripe:setup": "node scripts/setup-stripe.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
