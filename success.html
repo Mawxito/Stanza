@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment received — Stanza</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/stanza.css">
+  <style>
+    body { background: var(--dark); color: var(--light); min-height: 100vh; display: flex; flex-direction: column; }
+    .success { flex: 1; display: grid; place-items: center; position: relative; overflow: hidden; padding: 120px 16px; text-align: center; }
+    .success::before { content: ""; position: absolute; left: 50%; top: 50%; width: 900px; height: 600px; transform: translate(-50%, -50%); background: radial-gradient(closest-side, rgba(70,135,240,.35), rgba(70,135,240,0)); }
+    .success__inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 720px; }
+    .success__check { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-500); box-shadow: 0 0 40px rgba(70,135,240,.7); }
+    .steps { display: grid; gap: 12px; text-align: left; margin: 8px 0 8px; }
+    .steps li { display: flex; gap: 12px; align-items: baseline; font-size: 16px; }
+    .steps b { color: var(--blue-300); font-weight: 500; min-width: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__inner container">
+      <a class="logo" href="index.html" aria-label="Stanza home">
+        <span class="logo__icon" aria-hidden="true"><svg viewBox="0 0 32 24" width="32" height="24"><rect x="0" y="0" width="32" height="6.4" rx="3.2" fill="currentColor"/><rect x="0" y="8.8" width="21" height="6.4" rx="3.2" fill="currentColor"/><rect x="0" y="17.6" width="27" height="6.4" rx="3.2" fill="currentColor"/></svg></span>
+        <span class="logo__type">Stanza</span>
+      </a>
+    </div>
+  </header>
+  <main class="success">
+    <div class="success__inner">
+      <span class="success__check" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <h1 class="display display--md">Payment received.<br>Let's get you set up.</h1>
+      <p class="body-lg">Your payment is held securely in escrow until your delivery passes every acceptance check.</p>
+      <ol class="steps">
+        <li><b>1</b>Tell us about your domain and website (2 minutes).</li>
+        <li><b>2</b>A vetted specialist is matched and starts work.</li>
+        <li><b>3</b>You receive your acceptance report within 24–48 hours.</li>
+      </ol>
+      <a class="btn btn--light" href="#" data-tally="start">Complete onboarding</a>
+      <a class="text-btn" href="index.html">Back to Stanza</a>
+    </div>
+  </main>
+  <script src="assets/js/config.js"></script>
+  <script>
+    (function () {
+      var cfg = window.STANZA_CONFIG || { tally: {} };
+      var id = cfg.tally && cfg.tally.start;
+      var ok = id && id.indexOf('REPLACE_') !== 0;
+      var btn = document.querySelector('[data-tally="start"]');
+      if (ok) {
+        btn.href = 'https://tally.so/r/' + id;
+        var s = document.createElement('script');
+        s.src = 'https://tally.so/widgets/embed.js';
+        s.async = true;
+        document.head.appendChild(s);
+        btn.addEventListener('click', function (e) {
+          if (window.Tally) { e.preventDefault(); window.Tally.openPopup(id, { layout: 'modal', width: 640 }); }
+        });
+      } else {
+        btn.href = 'index.html#faq';
+      }
+    })();
+  </script>
+</body>
+</html>
