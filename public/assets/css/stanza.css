@@ -751,7 +751,7 @@ summary::-webkit-details-marker { display: none; }
    Pricing
    ========================================================================== */
 .pricing { background: var(--light); padding: 72px 0 96px; }
-.pricing__head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; max-width: 760px; margin: 0 auto 56px; }
+.pricing__head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; max-width: 900px; margin: 0 auto 56px; }
 .pricing__head .eyebrow { margin-bottom: 16px; }
 .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
 .plan {
@@ -762,6 +762,8 @@ summary::-webkit-details-marker { display: none; }
 }
 .plan:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px rgba(31,36,48,.08), 0 24px 50px -30px rgba(18,48,110,.35); }
 .plan__name { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; }
+.plan__name { white-space: nowrap; }
+.plan__name .tag { font-size: 11px; padding: 5px 10px; }
 .plan__price { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .plan__price span { font-family: var(--serif); font-variation-settings: "opsz" 72; font-size: 64px; line-height: 1; letter-spacing: -2px; }
 .plan__price small { font-size: 14px; color: var(--muted-light); }
@@ -779,6 +781,9 @@ summary::-webkit-details-marker { display: none; }
 .plan--featured .plan__list li::before { background-color: rgba(124,180,255,.16); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12.5l5 5L20 6.5' fill='none' stroke='%237cb4ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 .plan__glow { position: absolute; right: -30%; top: -30%; width: 90%; height: 70%; background: radial-gradient(closest-side, rgba(70,135,240,.45), rgba(70,135,240,0)); pointer-events: none; }
 .plan--featured > *:not(.plan__glow) { position: relative; }
+.plan__form { margin: 0; }
+.plan__form .btn:disabled { opacity: .7; cursor: progress; }
+.pricing__error { text-align: center; margin-top: 24px; color: #b42318; font-size: 16px; }
 .pricing__note { text-align: center; margin-top: 32px; font-size: 16px; color: var(--muted-light); }
 .pricing__note a { color: var(--dark); border-bottom: 1px solid currentColor; }
 

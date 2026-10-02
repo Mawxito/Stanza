@@ -1,0 +1,17 @@
+{
+  "name": "stanza-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev --kv ORDERS",
+    "deploy": "wrangler pages deploy",
+    "stripe:setup": "node scripts/setup-stripe.mjs",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "dependencies": {
+    "stripe": "^23.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

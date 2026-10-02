@@ -1,0 +1,7 @@
+#!/bin/sh
+# Block commits that contain Stripe secret/restricted keys or webhook secrets.
+if git diff --cached -U0 | grep -E '^\+' | grep -Eq '(sk|rk)_(live|test)_[A-Za-z0-9]{10,}|whsec_[A-Za-z0-9]{20,}'; then
+  echo "✘ Commit blocked: a Stripe secret key or webhook secret is staged."
+  echo "  Store keys in Cloudflare secrets or .dev.vars (git-ignored), never in the repo."
+  exit 1
+fi

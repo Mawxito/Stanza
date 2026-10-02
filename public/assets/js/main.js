@@ -48,19 +48,36 @@
     });
   });
 
-  $$('[data-stripe]').forEach(function (el) {
-    var link = CFG.stripe[el.getAttribute('data-stripe')];
-    if (isSet(link)) {
-      el.setAttribute('href', link);
-      el.setAttribute('rel', 'noopener');
-    } else {
-      el.addEventListener('click', function (e) {
-        e.preventDefault();
-        console.warn('[Stanza] Stripe Payment Link "' + el.getAttribute('data-stripe') + '" is not configured in assets/js/config.js');
-        openTally('start');
-      });
-    }
+  // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).
+  $$('[data-checkout]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var btn = form.querySelector('button');
+      if (!btn) return;
+      btn.setAttribute('data-label', btn.textContent);
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+      btn.textContent = 'Redirecting to checkout…';
+    });
   });
+  // Re-enable buttons when the buyer comes back from Checkout with the Back button.
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    $$('[data-checkout] button[aria-busy]').forEach(function (btn) {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+      btn.textContent = btn.getAttribute('data-label');
+    });
+  });
+  if (/[?&]checkout=error/.test(location.search)) {
+    var note = $('.pricing__note');
+    if (note) {
+      var err = document.createElement('p');
+      err.className = 'pricing__error';
+      err.setAttribute('role', 'alert');
+      err.textContent = 'Checkout could not be started. Please try again or contact us.';
+      note.parentNode.insertBefore(err, note);
+    }
+  }
 
   $$('[data-href="login"]').forEach(function (el) { el.setAttribute('href', CFG.loginUrl || '#'); });
   $$('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
