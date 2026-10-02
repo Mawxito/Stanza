@@ -48,14 +48,18 @@
       var id = cfg.tally && cfg.tally.start;
       var ok = id && id.indexOf('REPLACE_') !== 0;
       var btn = document.querySelector('[data-tally="start"]');
+      // Stripe replaces {CHECKOUT_SESSION_ID} in the Payment Link redirect URL.
+      // Forward it to Tally (hidden field "session_id") to match onboarding to the payment.
+      var sessionId = (new URLSearchParams(location.search).get('session_id') || '').replace(/[^\w]/g, '');
+      var hidden = sessionId ? { session_id: sessionId } : {};
       if (ok) {
-        btn.href = 'https://tally.so/r/' + id;
+        btn.href = 'https://tally.so/r/' + id + (sessionId ? '?session_id=' + sessionId : '');
         var s = document.createElement('script');
         s.src = 'https://tally.so/widgets/embed.js';
         s.async = true;
         document.head.appendChild(s);
         btn.addEventListener('click', function (e) {
-          if (window.Tally) { e.preventDefault(); window.Tally.openPopup(id, { layout: 'modal', width: 640 }); }
+          if (window.Tally) { e.preventDefault(); window.Tally.openPopup(id, { layout: 'modal', width: 640, hiddenFields: hidden }); }
         });
       } else {
         btn.href = 'index.html#faq';
