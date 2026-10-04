@@ -51,11 +51,14 @@ export function productName(key, lang) {
   return item ? item[lang].name : '';
 }
 
+// Packs have a single price: no data-tier, so the delivery-speed selector never hides it.
+const tierAttr = (item, tier) => (item.single ? '' : ` data-tier="${tier}"`);
+
 function priceBlock(item, tier, lang) {
   const ui = UI[lang];
   const amount = item.prices[tier];
   if (amount == null) {
-    return `<div class="offer__price" data-tier="${tier}"><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
+    return `<div class="offer__price"${tierAttr(item, tier)}><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
   }
   const ref = separatePrice(item, tier);
   const compare = ref && ref > amount
@@ -63,14 +66,14 @@ function priceBlock(item, tier, lang) {
     : '';
   // Packs: no fixed delivery time and no late-delivery refund, the time is set after the order.
   if (item.group === 'packs') {
-    return `<div class="offer__price" data-tier="${tier}">`
+    return `<div class="offer__price"${tierAttr(item, tier)}>`
       + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
       + compare
       + `<p class="offer__delay">${icon('i-clock', 16)}${ui.packDelay}</p>`
       + '</div>';
   }
   const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
-  return `<div class="offer__price" data-tier="${tier}">`
+  return `<div class="offer__price"${tierAttr(item, tier)}>`
     + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
     + compare
     + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
@@ -82,9 +85,9 @@ function ctaBlock(item, tier, lang) {
   const t = item[lang];
   const btn = item.featured ? 'btn--light' : 'btn--dark';
   if (item.prices[tier] == null) {
-    return `<div class="offer__cta" data-tier="${tier}"><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-tally="contact">${UI[lang].quoteCta}</a></div>`;
+    return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-tally="contact">${UI[lang].quoteCta}</a></div>`;
   }
-  return `<form class="offer__cta" data-tier="${tier}" method="post" action="/api/checkout" data-checkout>`
+  return `<form class="offer__cta"${tierAttr(item, tier)} method="post" action="/api/checkout" data-checkout>`
     + `<input type="hidden" name="plan" value="${item.key}"><input type="hidden" name="speed" value="${tier}"><input type="hidden" name="lang" value="${lang}">`
     + `<button class="btn ${btn} btn--block" type="submit">${esc(t.cta)}</button></form>`;
 }
@@ -116,7 +119,8 @@ function offerCard(item, lang) {
     + `<p class="offer__sub">${esc(t.subtitle)}</p>`
     + (item.quote
       ? quoteBlocks(item, lang)
-      : TIERS.map((tier) => priceBlock(item, tier, lang)).join('') + TIERS.map((tier) => ctaBlock(item, tier, lang)).join(''))
+      : (item.single ? ['standard'] : TIERS).map((tier) => priceBlock(item, tier, lang)).join('')
+        + (item.single ? ['standard'] : TIERS).map((tier) => ctaBlock(item, tier, lang)).join(''))
     + `<p class="offer__short">${esc(t.short)}</p>`
     + list(t.included)
     + `<details class="offer__more"><summary>${ui.details}<span class="faq__icon" aria-hidden="true"></span></summary><div class="offer__more-body">`

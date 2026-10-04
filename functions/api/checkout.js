@@ -34,9 +34,10 @@ export async function onRequestPost({ request, env }) {
   }
   const field = (name) => (form ? String(form.get(name) || '') : '');
   const plan = field('plan');
-  const speed = TIERS.includes(field('speed')) ? field('speed') : 'standard';
   const lang = field('lang') === 'fr' ? 'fr' : 'en';
   const item = BY_KEY[plan];
+  // Packs have a single price (the Standard one).
+  const speed = item && item.single ? 'standard' : TIERS.includes(field('speed')) ? field('speed') : 'standard';
   if (!item || item.prices[speed] == null) return Response.redirect(`${origin}/pricing`, 303);
 
   try {

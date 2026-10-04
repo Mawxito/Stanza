@@ -143,7 +143,8 @@ export const CATALOG = [
   {
     key: 'pack-compliance', id: 'B1', group: 'packs', pillar: 'compliance', icon: 'i-shield-check', days: 5,
     bundle: ['consent', 'accessibility'],
-    prices: { standard: 69000, express: 83000, flash: 93000 },
+    single: true, // one price; the delivery time is set after the order
+    prices: { standard: 69000, express: null, flash: null },
     fr: {
       name: 'Pack Conformité',
       title: 'Pack Conformité : cookies et accessibilité',
@@ -170,7 +171,8 @@ export const CATALOG = [
   {
     key: 'pack-revenue', id: 'B2', group: 'packs', pillar: 'revenue', icon: 'i-chart-line', days: 5,
     bundle: ['inbox', 'tracking', 'leads'],
-    prices: { standard: 119000, express: 143000, flash: 159000 },
+    single: true, // one price; the delivery time is set after the order
+    prices: { standard: 119000, express: null, flash: null },
     fr: {
       name: 'Pack Revenue',
       title: 'Pack Revenue : e-mails, conversions, prospects',
@@ -197,7 +199,8 @@ export const CATALOG = [
   {
     key: 'pack-complete', id: 'B3', group: 'packs', pillar: 'both', icon: 'i-sparkles', days: 5, featured: true,
     bundle: SERVICES,
-    prices: { standard: 185000, express: 210000, flash: 225000 },
+    single: true, // one price; the delivery time is set after the order
+    prices: { standard: 185000, express: null, flash: null },
     fr: {
       name: 'Pack Complet',
       title: 'Pack Complet : les 5 services',
