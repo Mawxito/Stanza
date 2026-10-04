@@ -7,7 +7,7 @@ import { detectLang, langCookie } from './_lib/i18n.js';
 import { FR } from './_lib/strings-fr.js';
 import { renderSlot, productName } from './_lib/render.js';
 
-export async function onRequest({ request, next }) {
+export async function onRequest({ request, next, env }) {
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/') || (request.method !== 'GET' && request.method !== 'HEAD')) return next();
 
@@ -26,13 +26,37 @@ export async function onRequest({ request, next }) {
   out.headers.set('vary', 'Cookie, Accept-Language');
   out.headers.set('content-language', lang);
   if (chosen) out.headers.append('set-cookie', langCookie(lang));
-  return translate(out, lang, url);
+  return translate(out, lang, url, env);
 }
 
-function translate(res, lang, url) {
+// The CSS and JS keep the same file names between deployments, so browsers and
+// Cloudflare's browser cache could serve an old copy with new HTML. Their URLs
+// get ?v=<content hash> (the asset's ETag), which changes whenever the file does.
+// One lookup per file and isolate; a new deployment starts new isolates.
+const versions = new Map();
+function assetVersion(env, origin, path) {
+  if (!env || !env.ASSETS) return Promise.resolve('');
+  if (!versions.has(path)) {
+    versions.set(path, env.ASSETS.fetch(new Request(origin + path, { method: 'HEAD' }))
+      .then((r) => (r.ok ? (r.headers.get('etag') || '').replace(/[^\w]/g, '').slice(-16) : ''))
+      .catch(() => ''));
+  }
+  return versions.get(path);
+}
+const versioned = (env, origin, attr) => ({
+  element: async (el) => {
+    const path = el.getAttribute(attr);
+    const v = await assetVersion(env, origin, path);
+    if (v) el.setAttribute(attr, `${path}?v=${v}`);
+  },
+});
+
+function translate(res, lang, url, env) {
   const page = `${url.origin}${url.pathname}`;
   const rewriter = new HTMLRewriter()
     .on('html', { element: (el) => el.setAttribute('lang', lang) })
+    .on('link[rel="stylesheet"][href^="/assets/"]', versioned(env, url.origin, 'href'))
+    .on('script[src^="/assets/"]', versioned(env, url.origin, 'src'))
     .on('head', {
       element: (el) => el.append(
         `<link rel="alternate" hreflang="en" href="${page}?lang=en">`
