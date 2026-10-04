@@ -15,6 +15,7 @@ const UI = {
     more: 'Détail et tarif',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
+    packDelay: 'Délai de livraison établi après commande',
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
     pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
@@ -31,6 +32,7 @@ const UI = {
     more: 'Details and pricing',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
+    packDelay: 'Delivery time set after the order',
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
     pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
@@ -59,6 +61,14 @@ function priceBlock(item, tier, lang) {
   const compare = ref && ref > amount
     ? `<p class="offer__compare">${ui.compare(formatPrice(ref, lang), formatPrice(ref - amount, lang))}</p>`
     : '';
+  // Packs: no fixed delivery time and no late-delivery refund, the time is set after the order.
+  if (item.group === 'packs') {
+    return `<div class="offer__price" data-tier="${tier}">`
+      + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
+      + compare
+      + `<p class="offer__delay">${icon('i-clock', 16)}${ui.packDelay}</p>`
+      + '</div>';
+  }
   const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
   return `<div class="offer__price" data-tier="${tier}">`
     + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
