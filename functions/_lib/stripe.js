@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { PLANS } from './plans.js';
+import { BY_KEY, lookupKey } from './catalog.js';
 
 // One client per isolate. The fetch client runs on Workers and on Node >= 18 (for local tests).
 let client;
@@ -18,13 +18,14 @@ export function getStripe(env) {
 }
 
 const priceCache = new Map();
-export async function getPriceId(stripe, plan) {
-  const def = PLANS[plan];
-  if (!def) return null;
-  if (priceCache.has(def.lookupKey)) return priceCache.get(def.lookupKey);
-  const { data } = await stripe.prices.list({ lookup_keys: [def.lookupKey], active: true, limit: 1 });
+export async function getPriceId(stripe, plan, tier) {
+  const item = BY_KEY[plan];
+  if (!item || item.prices[tier] == null) return null;
+  const key = lookupKey(plan, tier);
+  if (priceCache.has(key)) return priceCache.get(key);
+  const { data } = await stripe.prices.list({ lookup_keys: [key], active: true, limit: 1 });
   const id = data[0] ? data[0].id : null;
-  if (id) priceCache.set(def.lookupKey, id);
+  if (id) priceCache.set(key, id);
   return id;
 }
 

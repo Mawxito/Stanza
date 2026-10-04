@@ -67,6 +67,7 @@ async function confirmOrder(stripe, env, sessionId) {
     status: session.payment_status === 'paid' ? 'paid' : 'authorized',
     session: session.id,
     plan: session.metadata && session.metadata.plan,
+    speed: session.metadata && session.metadata.speed,
     amount: session.amount_total,
     currency: session.currency,
     email: session.customer_details && session.customer_details.email,
@@ -94,7 +95,7 @@ async function recordOrder(env, paymentIntentId, data, isNew = false) {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        text: `Stanza order ${order.status}: ${order.plan || ''} ${order.email || ''} (${paymentIntentId})`,
+        text: `Stanza order ${order.status}: ${order.plan || ''}${order.speed ? ` (${order.speed})` : ''} ${order.email || ''} (${paymentIntentId})`,
         order,
       }),
     });

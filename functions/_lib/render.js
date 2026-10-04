@@ -1,0 +1,124 @@
+// Server-side HTML for the catalog slots (<div data-catalog="…">) of the pages.
+// Prices and texts come from catalog.js, so the site always matches Stripe.
+import { CATALOG, BY_KEY, TIERS, separatePrice } from './catalog.js';
+
+const UI = {
+  fr: {
+    locale: 'fr-FR',
+    vat: 'HT',
+    quote: 'Sur devis',
+    quoteCta: 'Demander un devis',
+    compare: (ref, save) => `<s>${ref}</s> HT en services séparés · <b>−${save}</b>`,
+    details: 'Voir tout le détail',
+    excluded: 'Non inclus',
+    prereq: 'Prérequis',
+    more: 'Détail et tarif',
+    delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
+    pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
+  },
+  en: {
+    locale: 'en-IE',
+    vat: 'excl. VAT',
+    quote: 'On quote',
+    quoteCta: 'Request a quote',
+    compare: (ref, save) => `<s>${ref}</s> excl. VAT bought separately · <b>save ${save}</b>`,
+    details: 'See all the details',
+    excluded: 'Not included',
+    prereq: 'Prerequisites',
+    more: 'Details and pricing',
+    delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
+    pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
+  },
+};
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const icon = (id, size = 22) => `<svg width="${size}" height="${size}" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+export function formatPrice(cents, lang) {
+  return new Intl.NumberFormat(UI[lang].locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
+}
+
+export function productName(key, lang) {
+  const item = BY_KEY[key];
+  return item ? item[lang].name : '';
+}
+
+function priceBlock(item, tier, lang) {
+  const ui = UI[lang];
+  const amount = item.prices[tier];
+  if (amount == null) {
+    return `<div class="offer__price" data-tier="${tier}"><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
+  }
+  const ref = separatePrice(item, tier);
+  const compare = ref && ref > amount
+    ? `<p class="offer__compare">${ui.compare(formatPrice(ref, lang), formatPrice(ref - amount, lang))}</p>`
+    : '';
+  const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
+  return `<div class="offer__price" data-tier="${tier}">`
+    + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
+    + compare
+    + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
+    + '</div>';
+}
+
+function ctaBlock(item, tier, lang) {
+  const t = item[lang];
+  const btn = item.featured ? 'btn--light' : 'btn--dark';
+  if (item.prices[tier] == null) {
+    return `<div class="offer__cta" data-tier="${tier}"><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-tally="contact">${UI[lang].quoteCta}</a></div>`;
+  }
+  return `<form class="offer__cta" data-tier="${tier}" method="post" action="/api/checkout" data-checkout>`
+    + `<input type="hidden" name="plan" value="${item.key}"><input type="hidden" name="speed" value="${tier}"><input type="hidden" name="lang" value="${lang}">`
+    + `<button class="btn ${btn} btn--block" type="submit">${esc(t.cta)}</button></form>`;
+}
+
+function offerCard(item, lang) {
+  const t = item[lang];
+  const ui = UI[lang];
+  const list = (items, cls = '') => `<ul class="offer__list${cls}">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+  return `<article class="offer${item.featured ? ' offer--featured' : ''}" id="${item.key}">`
+    + (item.featured ? '<span class="offer__glow" aria-hidden="true"></span>' : '')
+    + `<div class="offer__top"><span class="offer__icon">${icon(item.icon)}</span><p class="offer__pillar">${esc(ui.pillar[item.pillar])}</p>`
+    + (t.badge ? `<i class="tag tag--glow">${esc(t.badge)}</i>` : '')
+    + '</div>'
+    // Packs already start their title with their name.
+    + (t.title.toLowerCase().startsWith(t.name.toLowerCase()) ? '' : `<p class="offer__name">${esc(t.name)}</p>`)
+    + `<h3 class="offer__title">${esc(t.title)}</h3>`
+    + `<p class="offer__sub">${esc(t.subtitle)}</p>`
+    + TIERS.map((tier) => priceBlock(item, tier, lang)).join('')
+    + TIERS.map((tier) => ctaBlock(item, tier, lang)).join('')
+    + `<p class="offer__short">${esc(t.short)}</p>`
+    + list(t.included)
+    + `<details class="offer__more"><summary>${ui.details}<span class="faq__icon" aria-hidden="true"></span></summary><div class="offer__more-body">`
+    + `<p>${esc(t.long)}</p>`
+    + `<p class="offer__h">${ui.excluded}</p>${list(t.excluded, ' offer__list--no')}`
+    + `<p class="offer__h">${ui.prereq}</p><p>${esc(t.prereq)}</p>`
+    + '</div></details>'
+    + '</article>';
+}
+
+// Home page: what each service does, without any price.
+function serviceCard(item, lang) {
+  const t = item[lang];
+  return `<a class="svc" href="/pricing#${item.key}">`
+    + `<span class="icon-box">${icon(item.icon, 24)}</span>`
+    + `<span class="svc__name">${esc(t.name)}</span>`
+    + `<h3 class="svc__title">${esc(t.subtitle)}</h3>`
+    + `<p class="svc__text">${esc(t.short)}</p>`
+    + `<span class="svc__more">${UI[lang].more} <span aria-hidden="true">→</span></span>`
+    + '</a>';
+}
+
+const SLOTS = {
+  packs: (lang) => CATALOG.filter((p) => p.group === 'packs').map((p) => offerCard(p, lang)).join(''),
+  compliance: (lang) => CATALOG.filter((p) => p.group === 'compliance').map((p) => offerCard(p, lang)).join(''),
+  revenue: (lang) => CATALOG.filter((p) => p.group === 'revenue').map((p) => offerCard(p, lang)).join(''),
+  multi: (lang) => CATALOG.filter((p) => p.group === 'multi').map((p) => offerCard(p, lang)).join(''),
+  'overview-compliance': (lang) => CATALOG.filter((p) => p.group === 'compliance').map((p) => serviceCard(p, lang)).join(''),
+  'overview-revenue': (lang) => CATALOG.filter((p) => p.group === 'revenue').map((p) => serviceCard(p, lang)).join(''),
+};
+
+export function renderSlot(name, lang) {
+  const slot = SLOTS[name];
+  return slot ? slot(lang) : '';
+}

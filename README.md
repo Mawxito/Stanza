@@ -1,27 +1,53 @@
 # Stanza — site vitrine
 
-Site marketing de **Stanza** : déploiement des protocoles de délivrabilité email (SPF, DKIM, DMARC, BIMI) et intégrations RGPD / cookies clés en main (CMP + blocage conditionnel des scripts), vendus en packages à prix fixe, livrés en 24–48 h.
+Site marketing de **Stanza**, en français et en anglais. Cinq services techniques à prix fixe, répartis en deux piliers, plus des packs :
 
-Le site est statique (HTML / CSS / JS vanilla) et hébergé sur **Cloudflare Pages**. Les paiements passent par **Stripe Checkout** via deux Pages Functions, les formulaires par **Tally**.
+- **Pilier 1 : Conformité** : consentement cookies (Consent Integration), diagnostic d'accessibilité (Accessibility Fast-Scan)
+- **Pilier 2 : Revenue & Data** : délivrabilité e-mail (Inbox Protocol), suivi côté serveur (Server-Side Tracking), alerte prospects (Lead Fast-Response)
+- **Packs** : Conformité, Revenue, Complet (les 5), et 6 domaines e-mail (5 payés, 1 offert)
+
+Chaque offre existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h).
+
+Le site est en HTML / CSS / JS vanilla, hébergé sur **Cloudflare Pages**. Un middleware Pages choisit la langue et insère les fiches produits ; les paiements passent par **Stripe Checkout**, les formulaires par **Tally**.
 
 ## Structure
 
 ```
-public/                       Site statique publié par Cloudflare Pages
-  index.html, success.html
-  assets/css · js · fonts · img
+public/                       Site publié par Cloudflare Pages (textes en anglais)
+  index.html                  Accueil : description des services, sans aucun prix
+  pricing.html                Page Tarifs (/pricing) : packs, services, délais, FAQ
+  success.html                Retour après paiement
+  _routes.json                Le middleware ne tourne pas sur /assets/*
   assets/js/config.js         ← IDs des formulaires Tally
+functions/_middleware.js      Langue + traduction FR + fiches produits, côté serveur
+functions/_lib/catalog.js     ← LES PRODUITS : textes FR/EN, prix, délais (source unique)
+functions/_lib/strings-fr.js  ← Traductions françaises des textes des pages
+functions/_lib/render.js      HTML des fiches produits (page Tarifs et accueil)
+functions/_lib/i18n.js        Choix de la langue (pays, cookie, ?lang=)
 functions/api/checkout.js     POST /api/checkout → crée la Checkout Session Stripe
 functions/api/stripe-webhook.js  POST /api/stripe-webhook → traitement des commandes
-functions/_lib/plans.js       Les 3 packages (nom, prix, lookup_key)
 scripts/setup-stripe.mjs      Crée/met à jour produits et prix dans Stripe
+scripts/check-i18n.mjs        Vérifie qu'aucun texte n'est sans traduction
 wrangler.toml                 Config Cloudflare Pages
 ```
 
+## Langues (FR / EN)
+
+- Les pages sont écrites en anglais. Pour un visiteur français, `functions/_middleware.js` remplace à la volée chaque texte marqué `data-i18n="clé"` par sa traduction de `functions/_lib/strings-fr.js`. Le HTML arrive déjà traduit : pas de « flash » d'anglais, et Google voit les deux versions.
+- **Langue choisie** : le bouton EN / FR (à gauche de « Log in ») pointe vers `?lang=en` / `?lang=fr` et mémorise le choix dans un cookie `stanza_lang` (cookie de préférence, exempté de consentement).
+- **Sans choix** : visiteur situé en France (DOM-TOM compris, d'après Cloudflare) → français ; ailleurs → anglais.
+- **Modifier un texte** : l'anglais dans le HTML, le français dans `strings-fr.js` (même clé). Puis `npm run check:i18n` signale les traductions manquantes.
+
+## Produits et prix
+
+Tout est dans `functions/_lib/catalog.js` : textes FR/EN, inclus / non inclus, prérequis, prix HT en centimes pour chaque délai. La page Tarifs et les cartes de l'accueil sont générées depuis ce fichier, donc le site affiche toujours les mêmes prix que Stripe. Le prix barré des packs est calculé automatiquement (somme des services séparés, pour le même délai).
+
+Le choix Standard / Express / Flash en haut de la page Tarifs bascule tous les prix et boutons, en CSS (sans JavaScript).
+
 ## Paiement : comment ça marche
 
-1. Le bouton « Buy … » envoie un formulaire `POST /api/checkout` avec le package choisi.
-2. La fonction récupère le prix par `lookup_key` et crée une **Checkout Session** (moyens de paiement dynamiques, adresse de facturation, numéro de TVA, métadonnée `plan`), puis redirige vers Stripe.
+1. Le bouton d'une fiche envoie un formulaire `POST /api/checkout` avec l'offre (`plan`), le délai (`speed`) et la langue.
+2. La fonction récupère le prix par `lookup_key` (`stanza_<offre>_<délai>`, ex. `stanza_pack_complete_express`) et crée une **Checkout Session** dans la langue du visiteur (moyens de paiement dynamiques, adresse de facturation, numéro de TVA, délai rappelé sous le bouton, métadonnées `plan` et `speed`), puis redirige vers Stripe.
 3. Avec `CAPTURE_METHOD = "manual"` (par défaut), la carte est **autorisée** au paiement mais **débitée seulement après l'acceptance gate**. Vous capturez le paiement depuis le Dashboard Stripe (Paiements → « Capturer »), dans un délai de 7 jours, sinon l'autorisation expire. Avec `"automatic"`, le client est débité immédiatement.
 4. Stripe renvoie le client sur `/success?session_id=…`, qui transmet l'ID au formulaire d'onboarding Tally (champ caché `session_id`).
 5. Le **webhook** (et non la page de succès) enregistre la commande : `authorized` → `paid` à la capture, ou `canceled` si l'autorisation est libérée. Il stocke la commande dans le KV `ORDERS` s'il est lié, et l'envoie en JSON à `ORDER_NOTIFY_URL` (Slack, Make, Zapier…) si elle est définie.
@@ -32,11 +58,12 @@ wrangler.toml                 Config Cloudflare Pages
 
 ```bash
 npm install
-STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 3 produits/prix (idempotent)
+STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 9 produits et 25 prix (idempotent)
 ```
 
 - Utilisez une **clé restreinte** (`rk_`) plutôt que la clé secrète. Permissions : Checkout Sessions (écriture), Prices (lecture), Products (lecture ; écriture uniquement pour le script de setup), Payment Intents (lecture).
 - Dans **Paramètres → Informations publiques**, réglez le nom d'entreprise affiché sur Checkout (« Stanza »).
+- Le script archive aussi les anciens prix (Inbox 450 €, Consent 550 €, Complete 800 €). Relancez-le à chaque changement de prix dans `catalog.js`.
 - Dans **Développeurs → Webhooks**, ajoutez l'endpoint `https://<votre-domaine>/api/stripe-webhook` avec les événements :
   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `payment_intent.succeeded`, `payment_intent.canceled`.
 
@@ -62,33 +89,23 @@ Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
 
 Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout commit contenant une clé `sk_`/`rk_` ou un `whsec_`.
 
-## Sections
+## Pages et sections
 
-| Section | Contenu |
-|---|---|
-| Header + méga-menus | Solutions (services, plateformes, packages), Resources, Pricing |
-| Hero | Titre animé mot par mot, 3 onglets Deliver / Comply / Verify avec barre de progression et défilement auto (9 s), maquettes animées |
-| Délivrabilité (clair) | SPF/DKIM/DMARC, BIMI & MX, Postmaster |
-| Conformité RGPD (sombre) | Déploiement CMP (Axeptio, Cookiebot, Didomi), blocage des scripts, Shopify / Webflow / WordPress |
-| Livraison vérifiée (sombre) | Acceptance gate, contrôles automatisés, escrow Stripe |
-| Standards | Gmail, Outlook, RGPD, CNIL, IAB TCF, DMARC… (fondu en cascade) |
-| Pourquoi Stanza | Slider : la carte active s'agrandit, fondu du contenu, boucle infinie |
-| Intégrations | Deux marquees en sens opposé, logo en couleur au survol |
-| Tarifs + FAQ | 3 packages reliés à Stripe |
-| CTA + footer | Fond étoilé animé, footer en accordéons |
+**Accueil** (`/`, aucun prix) : en-tête avec méga-menus et bouton EN / FR · hero avec ciel étoilé au ralenti et onglets animés (Délivrer / Se conformer / Vérifier) · « Deux piliers, cinq services » (cartes générées depuis le catalogue) · délivrabilité · conformité (cookies + accessibilité) · Revenue & Data (suivi serveur + alerte prospects) · livraison vérifiée · **Pourquoi c'est important** (enjeux 2024-2025 et cartes par profil : grandes entreprises, PME, e-commerçants, indépendants et particuliers, agences, associations et startups) · standards · slider · intégrations · FAQ · CTA étoilé.
 
-La section « Platform » du site de référence n'a pas été reproduite.
+**Tarifs** (`/pricing`) : hero · sélecteur de délai collant · packs · services du pilier 1 · services du pilier 2 · pack 6 domaines · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
 
 ## Personnalisation
 
 - **Couleurs** : variables `--blue-*`, `--dark`, `--light` en haut de `stanza.css`.
-- **Prix** : modifiez `functions/_lib/plans.js` **et** les montants affichés dans `public/index.html`, puis relancez `npm run stripe:setup` (un nouveau prix est créé et l'ancien archivé).
+- **Prix et textes des offres** : modifiez `functions/_lib/catalog.js` uniquement, puis relancez `npm run stripe:setup` (un nouveau prix est créé et l'ancien archivé).
+- **Textes des pages** : anglais dans `public/*.html`, français dans `functions/_lib/strings-fr.js`, puis `npm run check:i18n`.
 - **Accessibilité** : `prefers-reduced-motion` coupe les animations ; onglets et slider utilisables au clavier.
 
 ## À valider avant mise en ligne
 
 - Pages légales (mentions légales, confidentialité, CGV) : les liens du footer pointent vers `#`.
-- Les chiffres affichés dans les maquettes (98 % de placement, « matched in 6 minutes »…) sont illustratifs : remplacez-les par des données réelles ou gardez-les clairement comme exemples.
+- Les chiffres affichés dans les maquettes (100 % d'authentification, « 12 scripts bloqués »…) sont illustratifs : remplacez-les par des données réelles ou gardez-les clairement comme exemples.
 - Les logos de marques servent uniquement à indiquer la compatibilité ; ils restent la propriété de leurs détenteurs.
-- **TVA** : les prix sont créés sans taxe. N'activez `automatic_tax` (Stripe Tax) qu'après avoir enregistré votre immatriculation TVA dans Stripe, sinon aucune taxe n'est collectée.
+- **TVA et particuliers** : le site affiche des prix HT et Stripe facture exactement ces montants (prix créés en `tax_behavior: exclusive`, sans taxe ajoutée). Si vous êtes assujetti à la TVA, il faut la collecter ; et la vente à des particuliers impose en France d'afficher des prix TTC. Validez ce point avec votre comptable. N'activez `automatic_tax` (Stripe Tax) qu'après avoir enregistré votre immatriculation TVA dans Stripe, sinon aucune taxe n'est collectée.
 - **Clés** : passez en clés live (restreintes) seulement après la [checklist de mise en production Stripe](https://docs.stripe.com/get-started/checklist/go-live.md).

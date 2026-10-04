@@ -10,6 +10,12 @@
   var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
   var isSet = function (v) { return typeof v === 'string' && v && v.indexOf('REPLACE_') !== 0; };
 
+  // The page language is set on <html lang> by the server (functions/_middleware.js).
+  var FR = doc.lang === 'fr';
+  var T = FR
+    ? { redirect: 'Redirection vers le paiement…', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', slide: 'Diapositive ' }
+    : { redirect: 'Redirecting to checkout…', openMenu: 'Open menu', closeMenu: 'Close menu', slide: 'Slide ' };
+
   /* ------------------------------------------------------------------
    * Tally + Stripe wiring
    * ------------------------------------------------------------------ */
@@ -27,7 +33,7 @@
     if (!isSet(id)) id = CFG.tally && CFG.tally.contact;
     if (!isSet(id)) {
       console.warn('[Stanza] Tally form "' + key + '" is not configured in assets/js/config.js');
-      location.hash = '#pricing';
+      location.href = '/pricing';
       return;
     }
     if (window.Tally && typeof window.Tally.openPopup === 'function') {
@@ -49,6 +55,7 @@
   });
 
   // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).
+  // Forms and prices are rendered server-side from functions/_lib/catalog.js.
   $$('[data-checkout]').forEach(function (form) {
     form.addEventListener('submit', function () {
       var btn = form.querySelector('button');
@@ -56,7 +63,7 @@
       btn.setAttribute('data-label', btn.textContent);
       btn.disabled = true;
       btn.setAttribute('aria-busy', 'true');
-      btn.textContent = 'Redirecting to checkout…';
+      btn.textContent = T.redirect;
     });
   });
   // Re-enable buttons when the buyer comes back from Checkout with the Back button.
@@ -69,14 +76,8 @@
     });
   });
   if (/[?&]checkout=error/.test(location.search)) {
-    var note = $('.pricing__note');
-    if (note) {
-      var err = document.createElement('p');
-      err.className = 'pricing__error';
-      err.setAttribute('role', 'alert');
-      err.textContent = 'Checkout could not be started. Please try again or contact us.';
-      note.parentNode.insertBefore(err, note);
-    }
+    var checkoutError = $('[data-checkout-error]');
+    if (checkoutError) checkoutError.hidden = false;
   }
 
   $$('[data-href="login"]').forEach(function (el) { el.setAttribute('href', CFG.loginUrl || '#'); });
@@ -132,12 +133,13 @@
   document.addEventListener('click', function (e) { if (desktopMq.matches && !e.target.closest('[data-dropdown]')) dropItems.forEach(function (o) { setOpen(o, false); }); });
 
   if (burger) {
+    burger.setAttribute('aria-label', T.openMenu);
     burger.addEventListener('click', function () {
       var open = !header.classList.contains('is-menu-open');
       header.classList.toggle('is-menu-open', open);
       document.body.classList.toggle('menu-open', open);
       burger.setAttribute('aria-expanded', String(open));
-      burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      burger.setAttribute('aria-label', open ? T.closeMenu : T.openMenu);
     });
   }
   desktopMq.addEventListener('change', closeMenus);
@@ -370,7 +372,7 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('role', 'tab');
-      b.setAttribute('aria-label', 'Slide ' + (i + 1));
+      b.setAttribute('aria-label', T.slide + (i + 1));
       b.addEventListener('click', function () { goTo(i); });
       bulletsWrap.appendChild(b);
       return b;
@@ -447,8 +449,8 @@
    * ------------------------------------------------------------------ */
   var B = window.STANZA_BRANDS || {};
   var rows = {
-    row1: ['google:Google Workspace', 'shopify', 'webflow', 'wordpress', 'cloudflare', '#Axeptio', 'mailchimp:Mailchimp', 'hubspot', 'stripe', 'googletagmanager:Tag Manager'],
-    row2: ['gmail', '#Microsoft 365', 'brevo', '#Cookiebot', 'zoho:Zoho Mail', 'godaddy:GoDaddy', 'ovh:OVHcloud', '#Didomi', 'googleanalytics:Analytics', 'squarespace', 'gandi', 'meta']
+    row1: ['google:Google Workspace', 'shopify', 'webflow', 'wordpress', 'cloudflare', '#Axeptio', 'mailchimp:Mailchimp', 'hubspot', '#Make', 'stripe', 'googletagmanager:Tag Manager', '#Slack'],
+    row2: ['gmail', '#Microsoft 365', 'brevo', '#Cookiebot', 'zoho:Zoho Mail', '#Zapier', 'godaddy:GoDaddy', 'ovh:OVHcloud', '#Didomi', 'googleanalytics:Analytics', '#WhatsApp', 'squarespace', 'gandi', 'meta']
   };
   var itemHtml = function (spec) {
     if (spec.charAt(0) === '#') {
@@ -489,10 +491,12 @@
   });
 
   /* ------------------------------------------------------------------
-   * CTA starfield
+   * Starfields: CTA (data-stars) and the slow sky behind the hero
+   * (data-stars-pace="slow": fewer stars, slower drift and twinkle)
    * ------------------------------------------------------------------ */
-  var canvas = $('[data-stars]');
-  if (canvas && canvas.getContext) {
+  function starfield(canvas) {
+    if (!canvas.getContext) return;
+    var slow = canvas.getAttribute('data-stars-pace') === 'slow';
     var ctx = canvas.getContext('2d');
     var stars = [];
     var W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -501,16 +505,17 @@
       W = canvas.clientWidth; H = canvas.clientHeight;
       canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var count = Math.round(W * H / 3200);
+      var count = Math.round(W * H / (slow ? 4200 : 3200));
       stars = [];
       for (var i = 0; i < count; i++) {
         stars.push({
           x: Math.random() * W, y: Math.random() * H,
           r: Math.random() * 1.1 + 0.25,
           a: Math.random() * 0.7 + 0.15,
-          s: Math.random() * 0.015 + 0.004,
+          s: slow ? Math.random() * 0.006 + 0.0015 : Math.random() * 0.015 + 0.004,
           p: Math.random() * Math.PI * 2,
-          v: Math.random() * 0.06 + 0.01,
+          v: slow ? Math.random() * 0.018 + 0.004 : Math.random() * 0.06 + 0.01,
+          h: slow ? (Math.random() - 0.5) * 0.008 : 0,
           blue: Math.random() < 0.25
         });
       }
@@ -521,7 +526,9 @@
         var s = stars[i];
         s.p += s.s;
         s.y -= s.v;
+        s.x += s.h;
         if (s.y < -2) { s.y = H + 2; s.x = Math.random() * W; }
+        if (s.x < -2) s.x = W + 2; else if (s.x > W + 2) s.x = -2;
         var alpha = s.a * (0.55 + 0.45 * Math.sin(s.p));
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -531,14 +538,20 @@
       if (running) requestAnimationFrame(draw);
     };
     resize();
-    window.addEventListener('resize', resize);
-    if (reduceMotion) { draw(); }
-    else if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (en) {
-        var was = running;
-        running = en[0].isIntersecting;
-        if (running && !was) requestAnimationFrame(draw);
-      }).observe(canvas);
-    }
+    // Rebuild only when the canvas itself changes size (fonts loading, layout, rotation).
+    var onResize = function () {
+      if (canvas.clientWidth === W && canvas.clientHeight === H) return;
+      resize();
+      if (!running) draw();
+    };
+    if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(canvas);
+    else window.addEventListener('resize', onResize);
+    if (reduceMotion || !('IntersectionObserver' in window)) { draw(); return; }
+    new IntersectionObserver(function (en) {
+      var was = running;
+      running = en[0].isIntersecting;
+      if (running && !was) requestAnimationFrame(draw);
+    }).observe(canvas);
   }
+  $$('[data-stars]').forEach(starfield);
 })();

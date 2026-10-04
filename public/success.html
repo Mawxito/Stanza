@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Order confirmed — Stanza</title>
+  <title data-i18n="ok.title">Order confirmed — Stanza</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/stanza.css">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/stanza.css">
   <style>
     body { background: var(--dark); color: var(--light); min-height: 100vh; display: flex; flex-direction: column; }
     .success { flex: 1; display: grid; place-items: center; position: relative; overflow: hidden; padding: 120px 16px; text-align: center; }
@@ -19,39 +19,53 @@
   </style>
 </head>
 <body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol></svg>
   <header class="header">
     <div class="header__inner container">
-      <a class="logo" href="index.html" aria-label="Stanza home">
+      <a class="logo" href="/" aria-label="Stanza home" data-i18n-attr="aria-label:a11y.home">
         <span class="logo__icon" aria-hidden="true"><svg viewBox="0 0 32 24" width="32" height="24"><rect x="0" y="0" width="32" height="6.4" rx="3.2" fill="currentColor"/><rect x="0" y="8.8" width="21" height="6.4" rx="3.2" fill="currentColor"/><rect x="0" y="17.6" width="27" height="6.4" rx="3.2" fill="currentColor"/></svg></span>
         <span class="logo__type">Stanza</span>
       </a>
+      <div class="header__actions">
+        <div class="lang" role="group" aria-label="Language" data-i18n-attr="aria-label:a11y.lang">
+          <svg class="lang__icon" width="16" height="16" aria-hidden="true"><use href="#i-globe"/></svg>
+          <a class="lang__opt" href="?lang=en" hreflang="en" lang="en" data-lang="en" aria-label="English">EN</a>
+          <a class="lang__opt" href="?lang=fr" hreflang="fr" lang="fr" data-lang="fr" aria-label="Français">FR</a>
+        </div>
+      </div>
     </div>
   </header>
   <main class="success">
     <div class="success__inner">
       <span class="success__check" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <h1 class="display display--md">Order confirmed.<br>Let's get you set up.</h1>
-      <p class="body-lg">Your card has been authorized. It will only be charged once your delivery passes every acceptance check.</p>
+      <h1 class="display display--md" data-i18n="ok.h1">Order confirmed.<br>Let's get you set up.</h1>
+      <p class="body-lg" data-i18n="ok.lead">Your card has been authorized. It will only be charged once your delivery passes every acceptance check.</p>
       <ol class="steps">
-        <li><b>1</b>Tell us about your domain and website (2 minutes).</li>
-        <li><b>2</b>A vetted specialist is matched and starts work.</li>
-        <li><b>3</b>You receive your acceptance report within 24–48 hours.</li>
+        <li><b>1</b><span data-i18n="ok.s1">Tell us about your domain, your website and your tools (2 minutes).</span></li>
+        <li><b>2</b><span data-i18n="ok.s2">A vetted specialist is matched and starts work.</span></li>
+        <li><b>3</b><span data-i18n="ok.s3">You receive your test report within the delivery time you chose.</span></li>
       </ol>
-      <a class="btn btn--light" href="#" data-tally="start">Complete onboarding</a>
-      <a class="text-btn" href="index.html">Back to Stanza</a>
+      <a class="btn btn--light" href="#" data-tally="start" data-i18n="ok.cta">Complete onboarding</a>
+      <a class="text-btn" href="/" data-i18n="ok.back">Back to Stanza</a>
     </div>
   </main>
-  <script src="assets/js/config.js"></script>
+  <script src="/assets/js/config.js"></script>
   <script>
     (function () {
       var cfg = window.STANZA_CONFIG || { tally: {} };
       var id = cfg.tally && cfg.tally.start;
       var ok = id && id.indexOf('REPLACE_') !== 0;
       var btn = document.querySelector('[data-tally="start"]');
-      // Stripe replaces {CHECKOUT_SESSION_ID} in the Payment Link redirect URL.
+      // Stripe replaces {CHECKOUT_SESSION_ID} in the success URL.
       // Forward it to Tally (hidden field "session_id") to match onboarding to the payment.
       var sessionId = (new URLSearchParams(location.search).get('session_id') || '').replace(/[^\w]/g, '');
       var hidden = sessionId ? { session_id: sessionId } : {};
+      // Keep the session ID when switching language.
+      if (sessionId) {
+        document.querySelectorAll('[data-lang]').forEach(function (a) {
+          a.href = '?lang=' + a.getAttribute('data-lang') + '&session_id=' + sessionId;
+        });
+      }
       if (ok) {
         btn.href = 'https://tally.so/r/' + id + (sessionId ? '?session_id=' + sessionId : '');
         var s = document.createElement('script');
@@ -62,7 +76,7 @@
           if (window.Tally) { e.preventDefault(); window.Tally.openPopup(id, { layout: 'modal', width: 640, hiddenFields: hidden }); }
         });
       } else {
-        btn.href = 'index.html#faq';
+        btn.href = '/#faq';
       }
     })();
   </script>

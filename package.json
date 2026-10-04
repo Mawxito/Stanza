@@ -6,6 +6,7 @@
     "dev": "wrangler pages dev --kv ORDERS",
     "deploy": "wrangler pages deploy",
     "stripe:setup": "node scripts/setup-stripe.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
