@@ -7,7 +7,7 @@ Site marketing de **Stanza**, en français et en anglais. Cinq services techniqu
 - **Packs** : Conformité, Revenue, Complet (les 5)
 - **Multi-domaines** : sur devis ; le client indique le nombre de domaines, l'expert répond avec un devis et une estimation du délai
 
-Chaque offre (hors multi-domaines) existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h).
+Chaque offre (hors multi-domaines) existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h). Les délais sont **garantis** : en cas de retard, le client est remboursé de 50 % du prix HT en Standard et de 100 % du prix HT en Express ou Flash (délai compté à partir de la réception des accès ; les devis multi-domaines ne sont pas concernés). En capture manuelle, il suffit de capturer la moitié du montant (Standard) ou d'annuler l'autorisation (Express/Flash) ; si le paiement est déjà capturé, faites un remboursement depuis le Dashboard Stripe.
 
 Le site est en HTML / CSS / JS vanilla, hébergé sur **Cloudflare Pages**. Un middleware Pages choisit la langue et insère les fiches produits ; les paiements passent par **Stripe Checkout**, les formulaires par **Tally**.
 

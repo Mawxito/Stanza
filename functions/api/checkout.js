@@ -14,9 +14,11 @@ const SPEED_LABEL = {
   en: { standard: (d) => `Standard, ${d} business days`, express: () => 'Express, 48 hours max', flash: () => 'Flash, 24 hours max' },
 };
 const DELAY_NOTE = {
-  fr: (s) => `Délai de livraison : ${s}. Votre carte est autorisée maintenant et débitée seulement après validation de la livraison.`,
-  en: (s) => `Delivery time: ${s}. Your card is authorized now and charged only once the delivery is verified.`,
+  fr: (s, refund) => `Délai de livraison : ${s}, garanti (en cas de retard, ${refund} du prix HT remboursé). Votre carte est autorisée maintenant et débitée seulement après validation de la livraison.`,
+  en: (s, refund) => `Delivery time: ${s}, guaranteed (if we are late, ${refund} of the price excl. VAT is refunded). Your card is authorized now and charged only once the delivery is verified.`,
 };
+// Late-delivery refund promised on the site: half in Standard, everything in Express / Flash.
+const LATE_REFUND = { standard: '50 %', express: '100 %', flash: '100 %' };
 
 export async function onRequestPost({ request, env }) {
   const origin = new URL(request.url).origin;
@@ -48,7 +50,7 @@ export async function onRequestPost({ request, env }) {
       customer_creation: 'always',
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
-      custom_text: { submit: { message: DELAY_NOTE[lang](speedLabel) } },
+      custom_text: { submit: { message: DELAY_NOTE[lang](speedLabel, lang === 'fr' ? LATE_REFUND[speed] : LATE_REFUND[speed].replace(' ', '')) } },
       metadata: { plan, speed },
       payment_intent_data: {
         capture_method: captureMethod(env),

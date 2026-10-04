@@ -15,6 +15,7 @@ const UI = {
     more: 'Détail et tarif',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
+    guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
     pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
   },
@@ -30,6 +31,7 @@ const UI = {
     more: 'Details and pricing',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
+    guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
     pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
   },
@@ -62,6 +64,7 @@ function priceBlock(item, tier, lang) {
     + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
     + compare
     + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
+    + `<p class="offer__guarantee">${icon('i-shield-check', 16)}${ui.guarantee[tier]}</p>`
     + '</div>';
 }
 
