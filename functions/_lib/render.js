@@ -14,6 +14,8 @@ const UI = {
     prereq: 'Prérequis',
     more: 'Détail et tarif',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
+    quoteDelay: "Délai estimé par l'expert avec votre devis",
+    domains: 'Nombre de domaines',
     pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
   },
   en: {
@@ -27,6 +29,8 @@ const UI = {
     prereq: 'Prerequisites',
     more: 'Details and pricing',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
+    quoteDelay: 'Delivery time estimated by the expert with your quote',
+    domains: 'Number of domains',
     pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
   },
 };
@@ -72,6 +76,18 @@ function ctaBlock(item, tier, lang) {
     + `<button class="btn ${btn} btn--block" type="submit">${esc(t.cta)}</button></form>`;
 }
 
+// On-quote offer: same for every delivery speed. The client enters the number
+// of domains; main.js opens the Tally "quote" form with it as a hidden field.
+function quoteBlocks(item, lang) {
+  const ui = UI[lang];
+  return `<div class="offer__price"><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p>`
+    + `<p class="offer__delay">${icon('i-clock', 16)}${esc(ui.quoteDelay)}</p></div>`
+    + `<form class="offer__quote" data-quote="${item.key}">`
+    + `<label class="offer__field"><span>${ui.domains}</span>`
+    + '<input type="number" name="domains" min="2" max="999" step="1" value="10" inputmode="numeric" required></label>'
+    + `<button class="btn btn--dark btn--block" type="submit">${esc(item[lang].cta)}</button></form>`;
+}
+
 function offerCard(item, lang) {
   const t = item[lang];
   const ui = UI[lang];
@@ -85,8 +101,9 @@ function offerCard(item, lang) {
     + (t.title.toLowerCase().startsWith(t.name.toLowerCase()) ? '' : `<p class="offer__name">${esc(t.name)}</p>`)
     + `<h3 class="offer__title">${esc(t.title)}</h3>`
     + `<p class="offer__sub">${esc(t.subtitle)}</p>`
-    + TIERS.map((tier) => priceBlock(item, tier, lang)).join('')
-    + TIERS.map((tier) => ctaBlock(item, tier, lang)).join('')
+    + (item.quote
+      ? quoteBlocks(item, lang)
+      : TIERS.map((tier) => priceBlock(item, tier, lang)).join('') + TIERS.map((tier) => ctaBlock(item, tier, lang)).join(''))
     + `<p class="offer__short">${esc(t.short)}</p>`
     + list(t.included)
     + `<details class="offer__more"><summary>${ui.details}<span class="faq__icon" aria-hidden="true"></span></summary><div class="offer__more-body">`

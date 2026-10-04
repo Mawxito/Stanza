@@ -4,9 +4,10 @@ Site marketing de **Stanza**, en français et en anglais. Cinq services techniqu
 
 - **Pilier 1 : Conformité** : consentement cookies (Consent Integration), diagnostic d'accessibilité (Accessibility Fast-Scan)
 - **Pilier 2 : Revenue & Data** : délivrabilité e-mail (Inbox Protocol), suivi côté serveur (Server-Side Tracking), alerte prospects (Lead Fast-Response)
-- **Packs** : Conformité, Revenue, Complet (les 5), et 6 domaines e-mail (5 payés, 1 offert)
+- **Packs** : Conformité, Revenue, Complet (les 5)
+- **Multi-domaines** : sur devis ; le client indique le nombre de domaines, l'expert répond avec un devis et une estimation du délai
 
-Chaque offre existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h).
+Chaque offre (hors multi-domaines) existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h).
 
 Le site est en HTML / CSS / JS vanilla, hébergé sur **Cloudflare Pages**. Un middleware Pages choisit la langue et insère les fiches produits ; les paiements passent par **Stripe Checkout**, les formulaires par **Tally**.
 
@@ -58,12 +59,12 @@ Le choix Standard / Express / Flash en haut de la page Tarifs bascule tous les p
 
 ```bash
 npm install
-STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 9 produits et 25 prix (idempotent)
+STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 24 prix (idempotent)
 ```
 
 - Utilisez une **clé restreinte** (`rk_`) plutôt que la clé secrète. Permissions : Checkout Sessions (écriture), Prices (lecture), Products (lecture ; écriture uniquement pour le script de setup), Payment Intents (lecture).
 - Dans **Paramètres → Informations publiques**, réglez le nom d'entreprise affiché sur Checkout (« Stanza »).
-- Le script archive aussi les anciens prix (Inbox 450 €, Consent 550 €, Complete 800 €). Relancez-le à chaque changement de prix dans `catalog.js`.
+- Le script archive aussi les anciens prix (Inbox 450 €, Consent 550 €, Complete 800 €, pack 6 domaines). Relancez-le à chaque changement de prix dans `catalog.js`.
 - Dans **Développeurs → Webhooks**, ajoutez l'endpoint `https://<votre-domaine>/api/stripe-webhook` avec les événements :
   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `payment_intent.succeeded`, `payment_intent.canceled`.
 
@@ -75,7 +76,7 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 9 produits et 2
 
 ### 3. Tally
 
-Collez les IDs des formulaires dans `public/assets/js/config.js`. Dans le formulaire d'onboarding, ajoutez un champ caché `session_id`.
+Collez les IDs des formulaires dans `public/assets/js/config.js`. Dans le formulaire d'onboarding, ajoutez un champ caché `session_id`. Dans le formulaire de devis multi-domaines (`quote`), ajoutez les champs cachés `domains`, `offer` et `lang` : le nombre de domaines saisi sur la page Tarifs y arrive automatiquement.
 
 ### Développement local
 
@@ -93,7 +94,7 @@ Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout comm
 
 **Accueil** (`/`, aucun prix) : en-tête avec méga-menus et bouton EN / FR · hero avec ciel étoilé au ralenti et onglets animés (Délivrer / Se conformer / Vérifier) · « Deux piliers, cinq services » (cartes générées depuis le catalogue) · délivrabilité · conformité (cookies + accessibilité) · Revenue & Data (suivi serveur + alerte prospects) · livraison vérifiée · **Pourquoi c'est important** (enjeux 2024-2025 et cartes par profil : grandes entreprises, PME, e-commerçants, indépendants et particuliers, agences, associations et startups) · standards · slider · intégrations · FAQ · CTA étoilé.
 
-**Tarifs** (`/pricing`) : hero · sélecteur de délai collant · packs · services du pilier 1 · services du pilier 2 · pack 6 domaines · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
+**Tarifs** (`/pricing`) : hero · sélecteur de délai collant · packs · services du pilier 1 · services du pilier 2 · multi-domaines sur devis (champ « nombre de domaines ») · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
 
 ## Personnalisation
 

@@ -989,6 +989,14 @@ summary::-webkit-details-marker { display: none; }
 .offer__cta .btn { white-space: normal; text-align: center; height: auto; min-height: 48px; }
 .offer__cta .btn:disabled { opacity: .7; cursor: progress; }
 .offer__short { font-size: 15px; line-height: 1.45; }
+.offer__quote { display: grid; gap: 12px; margin: 0; }
+.offer__field { display: grid; gap: 6px; font-size: 14px; font-weight: 500; }
+.offer__field input {
+  height: 48px; padding: 0 16px; border: 1px solid var(--grey-3); border-radius: var(--radius-sm);
+  font: inherit; font-size: 18px; color: var(--dark); background: #fff;
+}
+.offer__field input:focus { outline: 2px solid var(--blue-400); outline-offset: 1px; border-color: transparent; }
+.offer__field input:invalid { border-color: #d92d20; }
 .offer__list { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--grey-2); }
 .offer__list li { position: relative; padding-left: 28px; font-size: 14.5px; line-height: 1.4; }
 .offer__list li::before {

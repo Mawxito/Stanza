@@ -6,7 +6,7 @@
 //
 // Run it once per environment (sandbox, then live).
 import Stripe from 'stripe';
-import { CATALOG, TIERS, lookupKey, LEGACY_LOOKUP_KEYS } from '../functions/_lib/catalog.js';
+import { CATALOG, TIERS, lookupKey, LEGACY_LOOKUP_KEYS, LEGACY_PLANS } from '../functions/_lib/catalog.js';
 
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) {
@@ -21,6 +21,7 @@ const existing = await stripe.products.list({ limit: 100 }).autoPagingToArray({ 
 const findProduct = (plan) => existing.find((p) => p.metadata && p.metadata.plan === plan) || null;
 
 for (const item of CATALOG) {
+  if (item.quote) continue; // quoted on request, not sold through Stripe
   const info = { name: item.en.name, description: item.en.short, metadata: { plan: item.key, id: item.id } };
   let product = await findProduct(item.key);
   if (product) {
@@ -61,14 +62,14 @@ for (const item of CATALOG) {
   }
 }
 
-// Archive the prices of the previous offer (Inbox Protocol €450, Consent €550, Complete €800).
-const legacy = await stripe.prices.list({ lookup_keys: LEGACY_LOOKUP_KEYS, active: true, limit: 10 });
+// Archive the prices of previous offers (Inbox Protocol €450, Consent €550, Complete €800, fixed 6-domain pack).
+const legacy = await stripe.prices.list({ lookup_keys: LEGACY_LOOKUP_KEYS, active: true, limit: 20 });
 for (const price of legacy.data) {
   await stripe.prices.update(price.id, { active: false });
   console.log(`✗ archived legacy price ${price.lookup_key} (${price.id})`);
 }
-// The old "Complete Compliance" bundle has no equivalent in the catalog.
-for (const product of existing.filter((p) => p.active && p.metadata && p.metadata.plan === 'bundle')) {
+// Products with no equivalent in the catalog any more (old bundle, fixed 6-domain pack).
+for (const product of existing.filter((p) => p.active && p.metadata && LEGACY_PLANS.includes(p.metadata.plan))) {
   await stripe.products.update(product.id, { active: false });
   console.log(`✗ archived legacy product ${product.name} (${product.id})`);
 }

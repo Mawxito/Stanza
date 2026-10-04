@@ -224,31 +224,31 @@ export const CATALOG = [
     },
   },
   {
-    key: 'pack-6-domains', id: 'M1', group: 'multi', pillar: 'revenue', icon: 'i-mails', days: 7,
-    bundle: ['inbox', 'inbox', 'inbox', 'inbox', 'inbox', 'inbox'],
-    // Express and Flash are quoted on request for this pack.
-    prices: { standard: 195000, express: null, flash: null },
+    // On quote: the client gives the number of domains, the expert replies with
+    // a quote and an estimated delivery time. Nothing is sold through Stripe.
+    key: 'multi-domains', id: 'M1', group: 'multi', pillar: 'revenue', icon: 'i-mails', quote: true,
+    prices: { standard: null, express: null, flash: null },
     fr: {
-      name: 'Pack 6 domaines',
-      title: 'Pack 6 domaines e-mail : 5 payés, 1 offert',
-      subtitle: "Authentifiez tous vos domaines d'envoi, le sixième est offert.",
-      short: 'Inbox Protocol sur 6 domaines pour le prix de 5, avec un récapitulatif unique.',
-      long: 'Idéal pour les agences et les groupes multi-marques : le même travail de délivrabilité répété sur chaque domaine, avec un tarif de volume. Vous recevez un rapport par domaine et un tableau récapitulatif.',
-      included: ['Inbox Protocol sur 6 domaines', 'Un rapport par domaine', 'Tableau récapitulatif'],
+      name: 'Multi-domaines',
+      title: 'Délivrabilité multi-domaines : sur devis',
+      subtitle: "Indiquez le nombre de domaines à authentifier, un expert vous répond avec un devis.",
+      short: 'Inbox Protocol sur tous vos domaines d\'envoi, avec un tarif de volume et un récapitulatif unique.',
+      long: "Idéal pour les agences et les groupes multi-marques : le même travail de délivrabilité répété sur chaque domaine, avec un tarif de volume. Indiquez le nombre de domaines à traiter : un expert étudie votre demande et vous envoie un devis avec une estimation du délai de réalisation, à retrouver dans votre espace client. Vous recevez ensuite un rapport par domaine et un tableau récapitulatif.",
+      included: ['Inbox Protocol sur chaque domaine', 'Un rapport par domaine', 'Tableau récapitulatif', 'Délai estimé par l\'expert selon le volume'],
       excluded: ["Gestion de la réputation d'envoi", 'Surveillance mensuelle'],
       prereq: 'Accès DNS et messagerie pour chaque domaine.',
-      cta: 'Commander le pack 6',
+      cta: 'Demander mon devis',
     },
     en: {
-      name: '6-Domain Email Pack',
-      title: '6-domain email pack: pay for 5, get 1 free',
-      subtitle: 'Authenticate all your sending domains, the sixth one is free.',
-      short: 'Inbox Protocol on 6 domains for the price of 5, with a single summary.',
-      long: 'Ideal for agencies and multi-brand groups: the same deliverability work repeated on each domain, at a volume rate. You receive one report per domain and a summary table.',
-      included: ['Inbox Protocol on 6 domains', 'One report per domain', 'Summary table'],
+      name: 'Multi-domain',
+      title: 'Multi-domain email deliverability: on quote',
+      subtitle: 'Tell us how many domains to authenticate, an expert replies with a quote.',
+      short: 'Inbox Protocol on all your sending domains, at a volume rate, with a single summary.',
+      long: 'Ideal for agencies and multi-brand groups: the same deliverability work repeated on each domain, at a volume rate. Tell us how many domains to handle: an expert reviews your request and sends you a quote with an estimated delivery time, available in your client area. You then receive one report per domain and a summary table.',
+      included: ['Inbox Protocol on every domain', 'One report per domain', 'Summary table', 'Delivery time estimated by the expert for your volume'],
       excluded: ['Sending reputation management', 'Monthly monitoring'],
       prereq: 'DNS and email access for each domain.',
-      cta: 'Order the 6-domain pack',
+      cta: 'Request my quote',
     },
   },
 ];
@@ -257,8 +257,12 @@ export const BY_KEY = Object.fromEntries(CATALOG.map((p) => [p.key, p]));
 
 export const lookupKey = (key, tier) => `stanza_${key.replace(/-/g, '_')}_${tier}`;
 
-// Prices replaced by this catalog: archived by `npm run stripe:setup`.
-export const LEGACY_LOOKUP_KEYS = ['stanza_inbox_protocol', 'stanza_consent_integration', 'stanza_complete_compliance'];
+// Prices and products replaced by this catalog: archived by `npm run stripe:setup`.
+export const LEGACY_LOOKUP_KEYS = [
+  'stanza_inbox_protocol', 'stanza_consent_integration', 'stanza_complete_compliance',
+  'stanza_pack_6_domains_standard', 'stanza_pack_6_domains_express', 'stanza_pack_6_domains_flash',
+];
+export const LEGACY_PLANS = ['bundle', 'pack-6-domains'];
 
 // Sum of the bundled services at a tier: the "bought separately" reference price.
 export function separatePrice(item, tier) {

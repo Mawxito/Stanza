@@ -28,7 +28,8 @@
     s.async = true;
     document.head.appendChild(s);
   }
-  function openTally(key) {
+  // hidden: values for the form's hidden fields, e.g. { domains: 10 }
+  function openTally(key, hidden) {
     var id = CFG.tally && CFG.tally[key];
     if (!isSet(id)) id = CFG.tally && CFG.tally.contact;
     if (!isSet(id)) {
@@ -37,9 +38,10 @@
       return;
     }
     if (window.Tally && typeof window.Tally.openPopup === 'function') {
-      window.Tally.openPopup(id, { layout: 'modal', width: 640, overlay: true, emoji: { text: '👋', animation: 'wave' } });
+      window.Tally.openPopup(id, { layout: 'modal', width: 640, overlay: true, emoji: { text: '👋', animation: 'wave' }, hiddenFields: hidden || {} });
     } else {
-      window.open('https://tally.so/r/' + id, '_blank', 'noopener');
+      var qs = hidden ? '?' + Object.keys(hidden).map(function (k) { return k + '=' + encodeURIComponent(hidden[k]); }).join('&') : '';
+      window.open('https://tally.so/r/' + id + qs, '_blank', 'noopener');
     }
   }
   if (isSet(CFG.tally && CFG.tally.contact) || isSet(CFG.tally && CFG.tally.start)) loadTally();
@@ -53,6 +55,17 @@
       openTally(el.getAttribute('data-tally'));
     });
   });
+
+  // Quote requests (multi-domain): the number of domains goes to the Tally "quote" form.
+  $$('[data-quote]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = form.querySelector('[name="domains"]');
+      if (!form.reportValidity()) return;
+      openTally('quote', { domains: input.value, offer: form.getAttribute('data-quote'), lang: doc.lang });
+    });
+  });
+  if (isSet(CFG.tally && CFG.tally.quote)) loadTally();
 
   // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).
   // Forms and prices are rendered server-side from functions/_lib/catalog.js.

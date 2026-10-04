@@ -20,6 +20,7 @@ window.STANZA_CONFIG = {
 
   tally: {
     contact: 'REPLACE_TALLY_CONTACT_FORM_ID',      // Contact sales / questions
+    quote: 'REPLACE_TALLY_QUOTE_FORM_ID',          // Multi-domain quote (hidden field "domains")
     start: 'REPLACE_TALLY_ONBOARDING_FORM_ID',     // Get started (domain + stack intake)
     specialist: 'REPLACE_TALLY_SPECIALIST_FORM_ID', // Become a Stanza specialist
     dnsCheck: 'REPLACE_TALLY_DNS_CHECK_FORM_ID',   // Free deliverability check
