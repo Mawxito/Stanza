@@ -2,21 +2,20 @@
 
 Site marketing de **Stanza** : déploiement des protocoles de délivrabilité email (SPF, DKIM, DMARC, BIMI) et intégrations RGPD / cookies clés en main (CMP + blocage conditionnel des scripts), vendus en packages à prix fixe, livrés en 24–48 h.
 
-Le site est statique (HTML / CSS / JS vanilla) et hébergé sur **Cloudflare Workers** (assets statiques). Les paiements passent par **Stripe Checkout** via deux routes API du Worker, les formulaires par **Tally**.
+Le site est statique (HTML / CSS / JS vanilla) et hébergé sur **Cloudflare Pages**. Les paiements passent par **Stripe Checkout** via deux Pages Functions, les formulaires par **Tally**.
 
 ## Structure
 
 ```
-public/                       Site statique (assets du Worker)
+public/                       Site statique publié par Cloudflare Pages
   index.html, success.html
   assets/css · js · fonts · img
   assets/js/config.js         ← IDs des formulaires Tally
-src/index.js                  Point d'entrée du Worker : route /api/* vers functions/
 functions/api/checkout.js     POST /api/checkout → crée la Checkout Session Stripe
 functions/api/stripe-webhook.js  POST /api/stripe-webhook → traitement des commandes
 functions/_lib/plans.js       Les 3 packages (nom, prix, lookup_key)
 scripts/setup-stripe.mjs      Crée/met à jour produits et prix dans Stripe
-wrangler.toml                 Config du Worker (main + [assets])
+wrangler.toml                 Config Cloudflare Pages
 ```
 
 ## Paiement : comment ça marche
@@ -41,11 +40,11 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 3 produits/prix
 - Dans **Développeurs → Webhooks**, ajoutez l'endpoint `https://<votre-domaine>/api/stripe-webhook` avec les événements :
   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `payment_intent.succeeded`, `payment_intent.canceled`.
 
-### 2. Cloudflare Workers
+### 2. Cloudflare Pages
 
-- Connectez le dépôt GitHub dans Cloudflare (Workers & Pages → Créer → Worker → Importer un dépôt). Commande de build : aucune ; commande de déploiement : `npx wrangler deploy` (`main` et `[assets]` sont définis dans `wrangler.toml`).
-- Ajoutez les secrets (Worker → Paramètres → Variables et secrets, type « Secret ») : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, et éventuellement `ORDER_NOTIFY_URL`.
-- Facultatif : créez un namespace KV et liez-le sous le nom `ORDERS` (bloc `[[kv_namespaces]]` de `wrangler.toml`) pour garder un journal des commandes.
+- Connectez le dépôt GitHub dans Cloudflare Pages : commande de build `npm install`, répertoire de sortie `public` (déjà défini dans `wrangler.toml`).
+- Ajoutez les secrets (Paramètres → Variables et secrets, type « Secret ») : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, et éventuellement `ORDER_NOTIFY_URL`.
+- Facultatif : créez un namespace KV et liez-le sous le nom `ORDERS` pour garder un journal des commandes.
 
 ### 3. Tally
 
@@ -55,8 +54,8 @@ Collez les IDs des formulaires dans `public/assets/js/config.js`. Dans le formul
 
 ```bash
 cp .dev.vars.example .dev.vars        # renseignez vos clés de test
-npm run dev                           # http://localhost:8787
-stripe listen --forward-to localhost:8787/api/stripe-webhook
+npm run dev                           # http://localhost:8788
+stripe listen --forward-to localhost:8788/api/stripe-webhook
 ```
 
 Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.

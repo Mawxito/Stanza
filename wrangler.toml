@@ -1,11 +1,7 @@
-# Cloudflare Worker — static site in ./public, API routes in ./src/index.js (→ ./functions)
+# Cloudflare Pages project — static site in ./public, server code in ./functions
 name = "stanza"
-main = "src/index.js"
+pages_build_output_dir = "./public"
 compatibility_date = "2026-09-01"
-
-[assets]
-directory = "./public"
-binding = "ASSETS"
 
 [vars]
 # "manual": card authorized at checkout, captured after the acceptance gate (≤ 7 days).
@@ -13,9 +9,9 @@ binding = "ASSETS"
 CAPTURE_METHOD = "manual"
 
 # Secrets (never commit them) — set in the Cloudflare dashboard or with:
-#   npx wrangler secret put STRIPE_SECRET_KEY
-#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
-#   npx wrangler secret put ORDER_NOTIFY_URL   (optional)
+#   npx wrangler pages secret put STRIPE_SECRET_KEY
+#   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET
+#   npx wrangler pages secret put ORDER_NOTIFY_URL   (optional)
 #
 # Optional order log (KV):
 # [[kv_namespaces]]
