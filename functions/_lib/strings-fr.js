@@ -6,7 +6,7 @@ export const FR = {
   // ---------- Head / accessibility ----------
   'home.title': `Stanza — Conformité, délivrabilité et suivi, réglés pour vous`,
   'home.desc': `Services techniques premium pour votre site et vos e-mails : consentement cookies, accessibilité, SPF/DKIM/DMARC, suivi côté serveur et alerte prospects. Experts vérifiés, prix fixes, suivi de 0 à 100 % et débit seulement après vérification.`,
-  'home.ogtitle': `Stanza — Restez conforme. Vendez en confiance.`,
+  'home.ogtitle': `Stanza — Ne laissez plus un problème technique bloquer votre croissance.`,
   'home.ogdesc': `Un travail premium réalisé par des experts vérifiés, à prix fixe, suivi de 0 à 100 % dans votre espace client et débité seulement une fois vérifié.`,
   'a11y.skip': `Aller au contenu principal`,
   'a11y.home': `Accueil Stanza`,
@@ -55,14 +55,14 @@ export const FR = {
   'nav.login': `Connexion`,
 
   // ---------- Hero ----------
-  'hero.eyebrow': `Services de qualité et durables qui font la différence`,
-  'hero.title': `Restez conforme.<br>Vendez en confiance.`,
-  'hero.lead': `Un travail technique premium sur votre site et vos e-mails : consentement, accessibilité, délivrabilité, suivi des conversions et alerte prospects. Réalisé par des experts vérifiés, à prix fixe, suivi de 0 à 100 % dans votre espace client, et débité seulement une fois vérifié.`,
+  'hero.eyebrow': `Des services de qualité et durables qui font la différence`,
+  'hero.title': `Ne laissez plus un problème technique bloquer votre croissance.`,
+  'hero.lead': `Un travail technique sur votre site et vos e-mails : consentement, accessibilité, délivrabilité, suivi des conversions, alerte prospects et bien d'autres prochainement. Réalisé par des experts vérifiés, à prix fixe, suivi du début à la fin dans votre espace client, et débité seulement une fois vérifié.`,
   'hero.cta': `Découvrir nos services`,
   'hero.cta2': `Pourquoi c'est important`,
   'pm.1': `Zéro temps perdu en recrutement`,
   'pm.2': `Prix fixe sans surprise`,
-  'pm.3': `Garantie de résultat et tiers de confiance`,
+  'pm.3': `Résultat conforme assuré par des experts de confiance`,
   'pm.4': `Délai d'urgence garanti ou remboursé`,
   'hero.tablist': `Services Stanza`,
   'tab1.label': `Revenue &amp; Data`,
