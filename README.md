@@ -94,7 +94,7 @@ Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout comm
 
 **Accueil** (`/`, aucun prix) : en-tête avec méga-menus et bouton EN / FR · hero avec ciel étoilé au ralenti et onglets animés (Délivrer / Se conformer / Vérifier) · « Deux piliers, cinq services » (cartes générées depuis le catalogue) · délivrabilité · conformité (cookies + accessibilité) · Revenue & Data (suivi serveur + alerte prospects) · livraison vérifiée · **Pourquoi c'est important** (enjeux 2024-2025 et cartes par profil : grandes entreprises, PME, e-commerçants, indépendants et particuliers, agences, associations et startups) · standards · slider · intégrations · FAQ · CTA étoilé.
 
-**Tarifs** (`/pricing`) : hero · sélecteur de délai collant · packs · services du pilier 1 · services du pilier 2 · multi-domaines sur devis (champ « nombre de domaines ») · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
+**Tarifs** (`/pricing`) : hero · sélecteur de délai collant · services du pilier 1 · services du pilier 2 · multi-domaines sur devis (champ « nombre de domaines ») · packs · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
 
 ## Personnalisation
 
