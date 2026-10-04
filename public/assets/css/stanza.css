@@ -1071,6 +1071,8 @@ summary::-webkit-details-marker { display: none; }
 .catalog:has(input[name="speed"][value="express"]:checked) [data-tier="express"],
 .catalog:has(input[name="speed"][value="flash"]:checked) [data-tier="flash"] { display: block; }
 
+.speed-note { max-width: 760px; margin: 14px auto 0; padding: 0 var(--gutter); text-align: center; font-size: 13.5px; line-height: 1.5; color: var(--muted-light); }
+.speed-note b { font-weight: 500; color: var(--dark); }
 .cat-section { padding-top: 88px; }
 .cat-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; max-width: 820px; margin: 0 auto 40px; }
 .cat-head .body-lg { color: var(--muted-light); font-size: 18px; line-height: 1.4; }

@@ -319,6 +319,7 @@ export const FR = {
   'pr.speed.std': `5 jours ouvrés`,
   'pr.speed.exp': `48 h maximum`,
   'pr.speed.fla': `24 h maximum`,
+  'pr.speed.note': `Délai garanti : en cas de retard, <b>50 % du prix HT est remboursé en Standard</b> et <b>100 % en Express ou en Flash</b>. Le délai court dès que nous avons tous les accès nécessaires.`,
   'pr.error': `Le paiement n'a pas pu démarrer. Réessayez ou contactez-nous.`,
   'pr.packs.t': `Plusieurs services, un seul passage, un meilleur prix`,
   'pr.packs.l': `Notre meilleur rapport qualité/prix : un seul expert s'occupe de tout dans le bon ordre, avec un rapport regroupé, pour moins cher que les mêmes services pris séparément.`,
