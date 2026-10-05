@@ -18,6 +18,8 @@ public/                       Site publié par Cloudflare Pages (textes en angla
   index.html                  Accueil : description des services, sans aucun prix
   pricing.html                Page Tarifs (/pricing) : packs, services, délais, FAQ
   success.html                Retour après paiement
+  login.html, signup.html     Connexion / inscription à l'espace client (Google, Microsoft, e-mail)
+  assets/js/auth.js           Comportement de ces deux pages
   _routes.json                Le middleware ne tourne pas sur /assets/*
   assets/js/config.js         ← IDs des formulaires Tally
 functions/_middleware.js      Langue + traduction FR + fiches produits, côté serveur
@@ -73,6 +75,10 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 1
 - Connectez le dépôt GitHub dans Cloudflare Pages : commande de build `npm install`, répertoire de sortie `public` (déjà défini dans `wrangler.toml`).
 - Ajoutez les secrets (Paramètres → Variables et secrets, type « Secret ») : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, et éventuellement `ORDER_NOTIFY_URL`.
 - Facultatif : créez un namespace KV et liez-le sous le nom `ORDERS` pour garder un journal des commandes.
+
+### 3. Espace client (connexion / inscription)
+
+Les pages `/login` et `/signup` reprennent l'interface de Typeform (Google, Microsoft, e-mail ; pas de SSO) aux couleurs de Stanza. **L'espace client n'existe pas encore** : tant que `auth.ready` vaut `false` dans `public/assets/js/config.js`, les boutons affichent « L'espace client ouvre très bientôt » avec un lien de contact. Quand le service d'authentification sera prêt, renseignez `googleUrl`, `microsoftUrl`, `loginEndpoint`, `signupEndpoint` et passez `ready` à `true`.
 
 ### 3. Tally
 

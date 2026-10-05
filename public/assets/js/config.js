@@ -27,5 +27,16 @@ window.STANZA_CONFIG = {
     newsletter: 'REPLACE_TALLY_NEWSLETTER_FORM_ID',
   },
 
-  loginUrl: '#', // Client / specialist dashboard (when available)
+  loginUrl: '/login',
+
+  // Client area sign-in (/login and /signup). Until the client area exists,
+  // `ready: false` makes the buttons show a "coming soon" message instead.
+  auth: {
+    ready: false,
+    googleUrl: '',        // OAuth start URL for "Continue with Google"
+    microsoftUrl: '',     // OAuth start URL for "Continue with Microsoft"
+    loginEndpoint: '',    // POST {email, password} → 200 when signed in
+    signupEndpoint: '',   // POST {name, company, email, password, marketing} → 200 when created
+    redirect: '/',        // where to go once signed in
+  },
 };

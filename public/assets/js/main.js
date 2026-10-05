@@ -104,7 +104,7 @@
   var burger = $('[data-burger]');
   var desktopMq = window.matchMedia('(min-width: 992px)');
 
-  function onScroll() { header.classList.toggle('is-scrolled', window.scrollY > 40); }
+  function onScroll() { if (header) header.classList.toggle('is-scrolled', window.scrollY > 40); }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
@@ -115,7 +115,7 @@
   }
   function closeMenus() {
     dropItems.forEach(function (i) { setOpen(i, false); });
-    header.classList.remove('is-menu-open');
+    if (header) header.classList.remove('is-menu-open');
     document.body.classList.remove('menu-open');
     if (burger) burger.setAttribute('aria-expanded', 'false');
   }
@@ -426,6 +426,14 @@
       }, 300);
     };
 
+    // The blue glow follows the pointer on each card.
+    slides.forEach(function (s) {
+      s.addEventListener('pointermove', function (e) {
+        var r = s.getBoundingClientRect();
+        s.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        s.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
     slides.forEach(function (s, i) {
       s.addEventListener('click', function () { if (!s.classList.contains('is-active')) goTo(i); });
     });
