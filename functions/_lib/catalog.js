@@ -11,11 +11,13 @@ const SERVICES = ['consent', 'accessibility', 'inbox', 'tracking', 'leads'];
 
 export const CATALOG = [
   {
-    key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 5,
+    key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 5, anchor: 'compliance',
     noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
     prices: { standard: 49000, express: 67900, flash: null },
     fr: {
       name: 'Consent Integration',
+      question: "Votre bannière cookies laisse-t-elle passer des traceurs ?",
+      answer: "Nous installons une plateforme de consentement qui bloque chaque script non essentiel tant que le visiteur n'a pas dit oui, avec Google Consent Mode v2 et un rapport de tests.",
       title: 'Consentement cookies conforme (RGPD et Consent Mode v2)',
       subtitle: "Votre bannière bloque vraiment les traceurs tant que le visiteur n'a pas dit oui.",
       short: "Déploiement d'une plateforme de consentement (Axeptio, Cookiebot ou Didomi) avec blocage conditionnel des scripts non essentiels, testé page par page.",
@@ -27,6 +29,8 @@ export const CATALOG = [
     },
     en: {
       name: 'Consent Integration',
+      question: "Does your cookie banner let trackers through?",
+      answer: "We set up a consent platform that blocks every non-essential script until the visitor says yes, with Google Consent Mode v2 and a test report.",
       title: 'GDPR-compliant cookie consent (and Consent Mode v2)',
       subtitle: 'Your banner really blocks trackers until the visitor says yes.',
       short: 'Deployment of a consent platform (Axeptio, Cookiebot or Didomi) with conditional blocking of non-essential scripts, tested page by page.',
@@ -38,10 +42,12 @@ export const CATALOG = [
     },
   },
   {
-    key: 'accessibility', id: 'S2', group: 'compliance', pillar: 'compliance', icon: 'i-scan-search', days: 5,
+    key: 'accessibility', id: 'S2', group: 'compliance', pillar: 'compliance', icon: 'i-scan-search', days: 5, anchor: 'accessibility',
     prices: { standard: 29000, express: 40300, flash: 44900 },
     fr: {
       name: 'Accessibility Fast-Scan',
+      question: "Votre site bloque-t-il des clients en situation de handicap ?",
+      answer: "Notre diagnostic repère les anomalies bloquantes de vos pages clés, vous dit si la loi européenne vous concerne et vous remet un plan de correction priorisé.",
       title: "Diagnostic d'accessibilité de votre boutique",
       subtitle: "Depuis juin 2025, un site marchand non conforme s'expose à des amendes. Sachez où vous en êtes avant un contrôle.",
       short: "Diagnostic immédiat : votre site présente-t-il des anomalies techniques bloquantes, oui ou non ?",
@@ -53,6 +59,8 @@ export const CATALOG = [
     },
     en: {
       name: 'Accessibility Fast-Scan',
+      question: "Does your site shut out customers with a disability?",
+      answer: "Our diagnostic finds the blocking anomalies on your key pages, tells you whether the European law applies to you and gives you a prioritized fix plan.",
       title: 'Accessibility diagnostic for your online store',
       subtitle: "Since June 2025, a non-compliant online store risks fines. Know where you stand before an inspection.",
       short: "Immediate diagnostic: does your site have blocking technical anomalies, yes or no?",
@@ -64,10 +72,12 @@ export const CATALOG = [
     },
   },
   {
-    key: 'inbox', id: 'S3', group: 'revenue', pillar: 'revenue', icon: 'i-mail-check', days: 5,
+    key: 'inbox', id: 'S3', group: 'revenue', pillar: 'revenue', icon: 'i-mail-check', days: 5, anchor: 'deliverability',
     prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Inbox Protocol',
+      question: "Vos devis et factures finissent-ils en spam ?",
+      answer: "Nous authentifions votre domaine (SPF, DKIM, DMARC, BIMI) pour que vos e-mails arrivent en boîte de réception, tests à l'appui.",
       title: 'Délivrabilité e-mail : SPF, DKIM, DMARC',
       subtitle: 'Vos devis, factures et relances arrivent chez vos clients, pas en spam.',
       short: "Configuration complète de l'authentification de votre domaine (SPF, DKIM, DMARC, BIMI, MX) avec vérification Google Postmaster.",
@@ -79,6 +89,8 @@ export const CATALOG = [
     },
     en: {
       name: 'Inbox Protocol',
+      question: "Do your quotes and invoices end up in spam?",
+      answer: "We authenticate your domain (SPF, DKIM, DMARC, BIMI) so that your emails reach the inbox, with tests as proof.",
       title: 'Email deliverability: SPF, DKIM, DMARC',
       subtitle: 'Your quotes, invoices and follow-ups reach your customers, not their spam folder.',
       short: 'Full authentication of your domain (SPF, DKIM, DMARC, BIMI, MX) with Google Postmaster verification.',
@@ -90,11 +102,13 @@ export const CATALOG = [
     },
   },
   {
-    key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 5,
+    key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 5, anchor: 'tracking',
     noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
     prices: { standard: 59000, express: 81700, flash: null },
     fr: {
       name: 'Server-Side Tracking',
+      question: "Vos outils publicitaires ratent-ils une partie de vos ventes ?",
+      answer: "Le suivi côté serveur (GTM Server, API Conversions Meta) remonte vos conversions de façon fiable, dans le respect du consentement.",
       title: 'Suivi des conversions côté serveur (GTM Server et API Meta)',
       subtitle: 'Des conversions mieux remontées à vos outils publicitaires, dans le respect du consentement.',
       short: 'Conteneur GTM côté serveur, API Conversions Meta et déduplication des événements, branchés sur votre plateforme de consentement.',
@@ -106,6 +120,8 @@ export const CATALOG = [
     },
     en: {
       name: 'Server-Side Tracking',
+      question: "Do your ad tools miss part of your sales?",
+      answer: "Server-side tracking (GTM Server, Meta Conversions API) reports your conversions reliably, within the limits of consent.",
       title: 'Server-side conversion tracking (GTM Server and Meta API)',
       subtitle: 'More of your conversions reach your ad tools, within the limits of consent.',
       short: 'Server-side GTM container, Meta Conversions API and event deduplication, wired to your consent platform.',
@@ -117,10 +133,12 @@ export const CATALOG = [
     },
   },
   {
-    key: 'leads', id: 'S5', group: 'revenue', pillar: 'revenue', icon: 'i-bell-ring', days: 5,
+    key: 'leads', id: 'S5', group: 'revenue', pillar: 'revenue', icon: 'i-bell-ring', days: 5, anchor: 'leads',
     prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Lead Fast-Response',
+      question: "Vos prospects attendent-ils trop longtemps une réponse ?",
+      answer: "Chaque nouvelle demande arrive dans votre CRM et votre équipe est alertée en quelques secondes sur WhatsApp, par e-mail ou sur Slack.",
       title: 'Alerte instantanée sur chaque nouveau prospect',
       subtitle: 'Votre équipe prévenue en quelques secondes, le prospect déjà dans votre CRM.',
       short: 'Scénario Make ou Zapier qui crée le contact dans votre CRM et alerte immédiatement votre équipe (WhatsApp, e-mail ou Slack).',
@@ -132,6 +150,8 @@ export const CATALOG = [
     },
     en: {
       name: 'Lead Fast-Response',
+      question: "Do your leads wait too long for an answer?",
+      answer: "Every new request lands in your CRM and your team is alerted within seconds on WhatsApp, by email or on Slack.",
       title: 'Instant alert on every new lead',
       subtitle: 'Your team notified within seconds, the lead already in your CRM.',
       short: 'A Make or Zapier scenario that creates the contact in your CRM and instantly alerts your team (WhatsApp, email or Slack).',

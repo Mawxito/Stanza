@@ -13,6 +13,7 @@ const UI = {
     excluded: 'Non inclus',
     prereq: 'Prérequis',
     more: 'Détail et tarif',
+    solution: 'Voir la solution',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
     noFlash: "Ce service n'est pas disponible en option Flash. L'option la plus rapide est l'Express (48 h maximum) : voici son prix.",
@@ -31,6 +32,7 @@ const UI = {
     excluded: 'Not included',
     prereq: 'Prerequisites',
     more: 'Details and pricing',
+    solution: 'See the solution',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
     noFlash: 'This service is not available in Flash. The fastest option is Express (48 hours max): here is its price.',
@@ -139,16 +141,28 @@ function offerCard(item, lang) {
     + '</article>';
 }
 
-// Home page: what each service does, without any price.
+// Home page: one card per service: the problem as a question, the solution,
+// an animated emblem, and a link down to the section that details it.
+const MOTIFS = {
+  consent: '<svg viewBox="0 0 120 80" class="sv sv--consent"><g class="sv-cookie"><circle cx="40" cy="40" r="21"/><circle class="sv-chip" cx="33" cy="33" r="2.6"/><circle class="sv-chip" cx="46" cy="36" r="2.2"/><circle class="sv-chip" cx="37" cy="48" r="2.4"/><circle class="sv-chip" cx="49" cy="47" r="1.8"/></g><g class="sv-lock"><rect x="50" y="49" width="16" height="13" rx="3"/><path class="sv-shackle" d="M53.5 49v-4a4.5 4.5 0 0 1 9 0v4"/></g><rect class="sv-track" x="76" y="31" width="30" height="18" rx="9"/><circle class="sv-knob" cx="85" cy="40" r="6.5"/></svg>',
+  accessibility: '<svg viewBox="0 0 120 80" class="sv sv--a11y"><rect class="sv-page" x="30" y="10" width="60" height="60" rx="7"/><rect class="sv-line" x="38" y="20" width="30" height="4" rx="2"/><rect class="sv-line" x="38" y="32" width="44" height="4" rx="2"/><rect class="sv-line" x="38" y="44" width="38" height="4" rx="2"/><rect class="sv-line" x="38" y="56" width="26" height="4" rx="2"/><circle class="sv-ok sv-ok--1" cx="86" cy="22" r="4"/><circle class="sv-ok sv-ok--2" cx="86" cy="34" r="4"/><circle class="sv-ok sv-ok--3" cx="86" cy="46" r="4"/><g class="sv-lens"><circle cx="0" cy="0" r="11"/><path d="m8 8 9 9"/></g></svg>',
+  inbox: '<svg viewBox="0 0 120 80" class="sv sv--inbox"><path class="sv-tray" d="M30 48h16l5 8h18l5-8h16v18a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4z"/><g class="sv-mail"><rect x="44" y="8" width="32" height="22" rx="3"/><path d="m44 10 16 11 16-11"/></g><circle class="sv-badge" cx="88" cy="46" r="7"/><path class="sv-tick" d="m84.5 46 2.5 2.5 4.5-5"/></svg>',
+  tracking: '<svg viewBox="0 0 120 80" class="sv sv--track"><path class="sv-wire" d="M24 40h72"/><circle class="sv-node" cx="20" cy="40" r="10"/><rect class="sv-node sv-node--mid" x="50" y="28" width="20" height="24" rx="4"/><circle class="sv-node" cx="100" cy="40" r="10"/><path class="sv-bars" d="M96 44v-3M100 44v-7M104 44v-5"/><circle class="sv-dot sv-dot--1" cx="24" cy="40" r="3"/><circle class="sv-dot sv-dot--2" cx="24" cy="40" r="3"/><circle class="sv-dot sv-dot--3" cx="24" cy="40" r="3"/></svg>',
+  leads: '<svg viewBox="0 0 120 80" class="sv sv--leads"><path class="sv-wave sv-wave--1" d="M38 26a26 26 0 0 0 0 28"/><path class="sv-wave sv-wave--2" d="M82 26a26 26 0 0 1 0 28"/><g class="sv-bell"><path d="M60 16c-9 0-15 7-15 16v8c0 4-2 7-5 9h40c-3-2-5-5-5-9v-8c0-9-6-16-15-16z"/><path d="M55 53a5 5 0 0 0 10 0"/></g><g class="sv-notif"><circle cx="74" cy="20" r="8"/><text x="74" y="23.5" text-anchor="middle">1</text></g></svg>',
+};
+
 function serviceCard(item, lang) {
   const t = item[lang];
-  return `<a class="svc" href="/pricing#${item.key}">`
-    + `<span class="icon-box">${icon(item.icon, 24)}</span>`
+  const question = lang === 'fr' ? esc(t.question).replace(/ ([?!:;])/g, '&nbsp;$1') : esc(t.question);
+  return `<a class="svc" href="#${item.anchor}" data-glow>`
+    + '<span class="svc__glow" aria-hidden="true"></span>'
+    + `<span class="svc__visual" aria-hidden="true">${MOTIFS[item.key] || ''}</span>`
+    + '<span class="svc__body">'
     + `<span class="svc__name">${esc(t.name)}</span>`
-    + `<h3 class="svc__title">${esc(t.subtitle)}</h3>`
-    + `<p class="svc__text">${esc(t.short)}</p>`
-    + `<span class="svc__more">${UI[lang].more} <span aria-hidden="true">→</span></span>`
-    + '</a>';
+    + `<h3 class="svc__title">${question}</h3>`
+    + `<p class="svc__text">${esc(t.answer)}</p>`
+    + `<span class="svc__more">${UI[lang].solution} <span aria-hidden="true">↓</span></span>`
+    + '</span></a>';
 }
 
 const SLOTS = {

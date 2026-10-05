@@ -111,6 +111,8 @@ export const FR = {
   'pro.3': `Un travail d'expert à prix fixe : pas de devis à relancer, pas d'abonnement, pas de surprise. Les packs coûtent moins cher que les mêmes services pris séparément.`,
   'pro.4.t': `Un suivi d'une simplicité absurde`,
   'pro.4': `Dans votre espace client, suivez chaque étape de votre commande : accès reçus, configuration, tests, rapport final. Vous savez toujours où en est le travail.`,
+  'sol.title': `Nos solutions`,
+  'sol.lead': `Chaque problème ci-dessus, résolu en détail.`,
 
   // ---------- Deliverability ----------
   'deliv.eyebrow': `Délivrabilité e-mail`,

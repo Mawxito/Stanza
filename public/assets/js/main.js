@@ -511,6 +511,15 @@
     });
   });
 
+  // Cards with a glow that follows the pointer (service cards on the home page).
+  $$('[data-glow]').forEach(function (el) {
+    el.addEventListener('pointermove', function (e) {
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
   /* ------------------------------------------------------------------
    * Starfields: CTA (data-stars) and the slow sky behind the hero
    * (data-stars-pace="slow": fewer stars, slower drift and twinkle)

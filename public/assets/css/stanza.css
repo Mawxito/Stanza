@@ -879,18 +879,93 @@ summary::-webkit-details-marker { display: none; }
 .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .svc-grid--2 { grid-template-columns: repeat(2, 1fr); }
 .svc {
-  position: relative; display: flex; flex-direction: column; gap: 12px;
-  padding: 28px; border-radius: var(--radius-md); background: #fff;
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  border-radius: var(--radius-md); background: #fff;
   box-shadow: 0 0 0 1px rgba(31,36,48,.06);
   transition: transform .4s var(--ease-out), box-shadow .4s ease;
 }
-.svc:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px rgba(31,36,48,.08), 0 24px 50px -30px rgba(18,48,110,.4); }
-.svc .icon-box { margin-bottom: 8px; }
+.svc:hover { transform: translateY(-6px); box-shadow: 0 0 0 1px rgba(63,127,232,.25), 0 28px 60px -30px rgba(18,48,110,.5); }
+.svc__glow { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(92,147,240,.16), rgba(92,147,240,0) 65%); }
+.svc:hover .svc__glow { opacity: 1; }
+.svc__visual {
+  position: relative; display: grid; place-items: center; height: 150px; margin: 8px 8px 0; border-radius: 18px; overflow: hidden;
+  background: radial-gradient(120% 120% at 100% 0%, #3f7fe8 0%, #1d3f86 48%, #182136 100%);
+}
+.svc__visual::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 60%, rgba(124,180,255,.35), rgba(124,180,255,0)); opacity: .6; transition: opacity .4s ease; }
+.svc:hover .svc__visual::after { opacity: 1; }
+.svc__visual .sv { position: relative; z-index: 1; width: 170px; height: 113px; overflow: visible; transition: transform .5s var(--ease-out); }
+.svc:hover .svc__visual .sv { transform: scale(1.06); }
+.svc__body { display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 22px 26px 26px; }
 .svc__name { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .4px; color: var(--blue-600); }
 .svc__title { font-size: 22px; line-height: 1.2; font-weight: 500; letter-spacing: -.2px; }
-.svc__text { font-size: 15px; line-height: 1.45; color: var(--muted-light); }
-.svc__more { margin-top: auto; padding-top: 8px; font-size: 15px; font-weight: 500; color: var(--dark); }
+.svc__text { font-size: 15px; line-height: 1.5; color: var(--muted-light); }
+.svc__more { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: auto; padding-top: 10px; font-size: 15px; font-weight: 500; color: var(--dark); }
+.svc__more span { display: inline-block; transition: transform .3s var(--ease-out); }
 .svc:hover .svc__more { color: var(--blue-600); }
+.svc:hover .svc__more span { transform: translateY(3px); }
+
+/* --- animated service emblems (white on blue) --- */
+.sv * { vector-effect: non-scaling-stroke; }
+/* consent: the toggle switches on, the lock opens */
+.sv--consent .sv-cookie > circle:first-child { fill: rgba(255,255,255,.92); }
+.sv--consent .sv-chip { fill: #2156c9; }
+.sv--consent .sv-lock rect { fill: #12306e; stroke: #fff; stroke-width: 1.5; }
+.sv--consent .sv-shackle { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; transform-box: fill-box; transform-origin: 100% 100%; animation: svShackle 4s ease-in-out infinite; }
+.sv--consent .sv-track { fill: rgba(255,255,255,.25); animation: svTrack 4s ease-in-out infinite; }
+.sv--consent .sv-knob { fill: #fff; animation: svKnob 4s ease-in-out infinite; }
+@keyframes svKnob { 0%, 25% { transform: translateX(0); } 40%, 85% { transform: translateX(12px); } 100% { transform: translateX(0); } }
+@keyframes svTrack { 0%, 25% { fill: rgba(255,255,255,.25); } 40%, 85% { fill: #3fd28b; } 100% { fill: rgba(255,255,255,.25); } }
+@keyframes svShackle { 0%, 30% { transform: none; } 45%, 85% { transform: translateY(-3px) rotate(-25deg); } 100% { transform: none; } }
+/* accessibility: a lens scans the page, checks appear */
+.sv--a11y .sv-page { fill: rgba(255,255,255,.92); }
+.sv--a11y .sv-line { fill: #cfe0fa; }
+.sv--a11y .sv-ok { fill: #3fd28b; opacity: 0; animation: svPop 4.5s ease infinite; }
+.sv--a11y .sv-ok--2 { fill: #f07a6a; animation-delay: .7s; }
+.sv--a11y .sv-ok--3 { animation-delay: 1.4s; }
+.sv--a11y .sv-lens circle { fill: rgba(124,180,255,.25); stroke: #fff; stroke-width: 2.5; }
+.sv--a11y .sv-lens path { stroke: #fff; stroke-width: 3; stroke-linecap: round; }
+.sv--a11y .sv-lens { animation: svScan 4.5s ease-in-out infinite; }
+@keyframes svScan { 0% { transform: translate(44px, 22px); } 33% { transform: translate(70px, 34px); } 66% { transform: translate(52px, 50px); } 100% { transform: translate(44px, 22px); } }
+@keyframes svPop { 0%, 15% { opacity: 0; transform: scale(.4); } 25%, 85% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+.sv--a11y .sv-ok { transform-box: fill-box; transform-origin: center; }
+/* inbox: the envelope drops into the inbox, then a check */
+.sv--inbox .sv-tray { fill: rgba(255,255,255,.2); stroke: #fff; stroke-width: 2; stroke-linejoin: round; }
+.sv--inbox .sv-mail rect { fill: #fff; }
+.sv--inbox .sv-mail path { fill: none; stroke: #2156c9; stroke-width: 2; stroke-linejoin: round; }
+.sv--inbox .sv-mail { animation: svDrop 3.6s var(--ease-out) infinite; }
+.sv--inbox .sv-badge { fill: #3fd28b; transform-box: fill-box; transform-origin: center; animation: svBadge 3.6s ease infinite; }
+.sv--inbox .sv-tick { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; animation: svBadge 3.6s ease infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes svDrop { 0% { transform: translateY(-14px); opacity: 0; } 15% { opacity: 1; } 45%, 80% { transform: translateY(26px); opacity: 1; } 100% { transform: translateY(26px); opacity: 0; } }
+@keyframes svBadge { 0%, 45% { opacity: 0; transform: scale(.3); } 55%, 85% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+/* tracking: data flows from the browser to your server to the ad tools */
+.sv--track .sv-wire { stroke: rgba(255,255,255,.35); stroke-width: 2; stroke-dasharray: 4 5; }
+.sv--track .sv-node { fill: #fff; }
+.sv--track .sv-node--mid { fill: #12306e; stroke: #fff; stroke-width: 2; }
+.sv--track .sv-bars { stroke: #2156c9; stroke-width: 2.5; stroke-linecap: round; }
+.sv--track .sv-dot { fill: #7cb4ff; animation: svFlow 2.4s linear infinite; }
+.sv--track .sv-dot--2 { animation-delay: .8s; }
+.sv--track .sv-dot--3 { animation-delay: 1.6s; }
+@keyframes svFlow { 0% { transform: translateX(0); opacity: 0; } 10% { opacity: 1; } 45% { fill: #7cb4ff; } 55% { fill: #3fd28b; } 90% { opacity: 1; } 100% { transform: translateX(66px); opacity: 0; fill: #3fd28b; } }
+/* leads: the bell rings, a notification pops */
+.sv--leads .sv-bell path { fill: #fff; stroke: #fff; stroke-width: 1.5; stroke-linejoin: round; }
+.sv--leads .sv-bell { transform-origin: 60px 16px; animation: svRing 3s ease-in-out infinite; }
+.sv--leads .sv-wave { fill: none; stroke: #7cb4ff; stroke-width: 2.5; stroke-linecap: round; opacity: 0; animation: svWave 3s ease-out infinite; }
+.sv--leads .sv-wave--2 { animation-delay: .1s; }
+.sv--leads .sv-notif circle { fill: #f07a6a; }
+.sv--leads .sv-notif text { fill: #fff; font: 600 10px var(--sans); }
+.sv--leads .sv-notif { transform-box: fill-box; transform-origin: center; animation: svBadge 3s ease infinite; }
+@keyframes svRing { 0%, 8%, 40%, 100% { transform: rotate(0); } 12% { transform: rotate(14deg); } 18% { transform: rotate(-12deg); } 24% { transform: rotate(9deg); } 30% { transform: rotate(-6deg); } 35% { transform: rotate(3deg); } }
+@keyframes svWave { 0%, 8% { opacity: 0; } 15% { opacity: 1; } 45%, 100% { opacity: 0; } }
+
+/* "Our solutions" heading, between the commitments and the detailed sections */
+.solutions-head { padding: 96px 0 0; text-align: center; overflow: hidden; }
+.solutions-head__title {
+  font-family: var(--sans); font-weight: 600; text-transform: uppercase; line-height: .95; letter-spacing: -.04em;
+  font-size: clamp(56px, 11vw, 160px);
+  background: linear-gradient(180deg, var(--dark) 35%, var(--blue-600) 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.solutions-head__lead { margin-top: 16px; font-size: 18px; color: var(--muted-light); }
 .services__packs { text-align: center; font-size: 17px; color: var(--muted-light); max-width: 760px; margin: 8px auto 0; line-height: 1.45; }
 .services__packs a { color: var(--dark); border-bottom: 1px solid currentColor; }
 .services__packs a:hover { color: var(--blue-600); }
@@ -1314,6 +1389,7 @@ summary::-webkit-details-marker { display: none; }
 .js [data-reveal].is-visible { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
+  .sv * { animation: none !important; opacity: 1 !important; }
   .tab-motif * { animation: none !important; stroke-dashoffset: 0 !important; transform: none; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .js [data-reveal], [data-intro], .split-word > span, .tabs { opacity: 1 !important; transform: none !important; }
