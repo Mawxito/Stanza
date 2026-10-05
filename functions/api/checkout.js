@@ -37,7 +37,9 @@ export async function onRequestPost({ request, env }) {
   const lang = field('lang') === 'fr' ? 'fr' : 'en';
   const item = BY_KEY[plan];
   // Packs have a single price (the Standard one).
-  const speed = item && item.single ? 'standard' : TIERS.includes(field('speed')) ? field('speed') : 'standard';
+  let speed = item && item.single ? 'standard' : TIERS.includes(field('speed')) ? field('speed') : 'standard';
+  // Services without Flash fall back to Express, the fastest option they offer.
+  if (item && item.noFlash && speed === 'flash') speed = 'express';
   if (!item || item.prices[speed] == null) return Response.redirect(`${origin}/pricing`, 303);
 
   try {

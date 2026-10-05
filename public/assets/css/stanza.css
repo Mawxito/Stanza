@@ -1169,6 +1169,7 @@ summary::-webkit-details-marker { display: none; }
 .offer__compare { margin-top: 8px; font-size: 13px; color: var(--muted-light); }
 .offer__compare b { font-weight: 500; color: var(--ok); }
 .offer__delay { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14px; color: var(--muted-light); }
+.offer__unavailable { margin-bottom: 10px; padding: 10px 12px; border-radius: 10px; background: #fdecea; color: #b42318; font-size: 13.5px; line-height: 1.4; font-weight: 500; }
 .offer__guarantee { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: var(--ok); }
 .offer--featured .offer__guarantee { color: #6fd3a0; }
 .offer__cta { margin: 0; }

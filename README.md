@@ -61,7 +61,7 @@ Le choix Standard / Express / Flash en haut de la page Tarifs bascule tous les p
 
 ```bash
 npm install
-STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 18 prix (idempotent)
+STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 16 prix (idempotent)
 ```
 
 - Utilisez une **clé restreinte** (`rk_`) plutôt que la clé secrète. Permissions : Checkout Sessions (écriture), Prices (lecture), Products (lecture ; écriture uniquement pour le script de setup), Payment Intents (lecture).

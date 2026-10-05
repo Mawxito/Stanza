@@ -12,7 +12,8 @@ const SERVICES = ['consent', 'accessibility', 'inbox', 'tracking', 'leads'];
 export const CATALOG = [
   {
     key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 5,
-    prices: { standard: 49000, express: 59000, flash: 66000 },
+    noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
+    prices: { standard: 49000, express: 67900, flash: null },
     fr: {
       name: 'Consent Integration',
       title: 'Consentement cookies conforme (RGPD et Consent Mode v2)',
@@ -38,7 +39,7 @@ export const CATALOG = [
   },
   {
     key: 'accessibility', id: 'S2', group: 'compliance', pillar: 'compliance', icon: 'i-scan-search', days: 5,
-    prices: { standard: 29000, express: 35000, flash: 39000 },
+    prices: { standard: 29000, express: 40300, flash: 44900 },
     fr: {
       name: 'Accessibility Fast-Scan',
       title: "Diagnostic d'accessibilité de votre boutique",
@@ -64,15 +65,15 @@ export const CATALOG = [
   },
   {
     key: 'inbox', id: 'S3', group: 'revenue', pillar: 'revenue', icon: 'i-mail-check', days: 5,
-    prices: { standard: 39000, express: 47000, flash: 53000 },
+    prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Inbox Protocol',
       title: 'Délivrabilité e-mail : SPF, DKIM, DMARC',
       subtitle: 'Vos devis, factures et relances arrivent chez vos clients, pas en spam.',
       short: "Configuration complète de l'authentification de votre domaine (SPF, DKIM, DMARC, BIMI, MX) avec vérification Google Postmaster.",
       long: "Google, Yahoo et Microsoft rejettent de plus en plus les e-mails non authentifiés. Nous configurons les enregistrements de votre domaine pour chaque service qui envoie en votre nom, montons la politique DMARC par étapes et mettons en place le reporting. Vous recevez un rapport de tests qui prouve que l'authentification fonctionne. Le placement en boîte principale dépend aussi du contenu et de la réputation d'envoi : le rapport contient des recommandations sur ces deux points.",
-      included: ["SPF, DKIM et DMARC configurés pour tous vos services d'envoi", 'Enregistrements MX nettoyés', "BIMI (affichage du logo selon les messageries)", 'Vérification Google Postmaster', 'Mise en place des rapports DMARC', 'Rapport de tests'],
-      excluded: ["Gestion de la réputation d'envoi", 'Rédaction des e-mails', 'Surveillance mensuelle'],
+      included: ["SPF, DKIM et DMARC configurés pour tous vos services d'envoi", 'Enregistrements MX nettoyés', "BIMI (affichage du logo selon les messageries)", 'Vérification Google Postmaster', 'Mise en place des rapports DMARC', 'Rapport de tests', "Rapport de bon usage : les bonnes pratiques d'envoi pour rester hors des spams"],
+      excluded: ["Garantie de placement en boîte de réception (elle dépend aussi du contenu et de vos usages d'envoi)", "Gestion de la réputation d'envoi", 'Rédaction des e-mails', 'Surveillance mensuelle'],
       prereq: 'Accès à la zone DNS et au fournisseur de messagerie (Google Workspace, Microsoft 365, etc.).',
       cta: 'Sécuriser mes e-mails',
     },
@@ -82,15 +83,16 @@ export const CATALOG = [
       subtitle: 'Your quotes, invoices and follow-ups reach your customers, not their spam folder.',
       short: 'Full authentication of your domain (SPF, DKIM, DMARC, BIMI, MX) with Google Postmaster verification.',
       long: 'Google, Yahoo and Microsoft increasingly reject unauthenticated email. We configure your domain records for every service that sends in your name, raise the DMARC policy step by step and set up reporting. You receive a test report proving that authentication works. Inbox placement also depends on content and sending reputation: the report includes recommendations on both.',
-      included: ['SPF, DKIM and DMARC configured for all your sending services', 'MX records cleaned up', 'BIMI (logo display, depending on the mailbox provider)', 'Google Postmaster verification', 'DMARC reporting set up', 'Test report'],
-      excluded: ['Sending reputation management', 'Writing your emails', 'Monthly monitoring'],
+      included: ['SPF, DKIM and DMARC configured for all your sending services', 'MX records cleaned up', 'BIMI (logo display, depending on the mailbox provider)', 'Google Postmaster verification', 'DMARC reporting set up', 'Test report', 'Good-practice report: the sending practices that keep you out of spam'],
+      excluded: ['Guaranteed inbox placement (it also depends on content and on how you send)', 'Sending reputation management', 'Writing your emails', 'Monthly monitoring'],
       prereq: 'Access to your DNS zone and your email provider (Google Workspace, Microsoft 365, etc.).',
       cta: 'Secure my emails',
     },
   },
   {
     key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 5,
-    prices: { standard: 59000, express: 71000, flash: 80000 },
+    noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
+    prices: { standard: 59000, express: 81700, flash: null },
     fr: {
       name: 'Server-Side Tracking',
       title: 'Suivi des conversions côté serveur (GTM Server et API Meta)',
@@ -116,7 +118,7 @@ export const CATALOG = [
   },
   {
     key: 'leads', id: 'S5', group: 'revenue', pillar: 'revenue', icon: 'i-bell-ring', days: 5,
-    prices: { standard: 39000, express: 47000, flash: 53000 },
+    prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Lead Fast-Response',
       title: 'Alerte instantanée sur chaque nouveau prospect',

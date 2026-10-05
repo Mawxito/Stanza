@@ -15,6 +15,7 @@ const UI = {
     more: 'Détail et tarif',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
+    noFlash: "Ce service n'est pas disponible en option Flash. L'option la plus rapide est l'Express (48 h maximum) : voici son prix.",
     packDelay: 'Délai de livraison établi après commande',
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
@@ -32,6 +33,7 @@ const UI = {
     more: 'Details and pricing',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
+    noFlash: 'This service is not available in Flash. The fastest option is Express (48 hours max): here is its price.',
     packDelay: 'Delivery time set after the order',
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
@@ -54,8 +56,12 @@ export function productName(key, lang) {
 // Packs have a single price: no data-tier, so the delivery-speed selector never hides it.
 const tierAttr = (item, tier) => (item.single ? '' : ` data-tier="${tier}"`);
 
-function priceBlock(item, tier, lang) {
+// Services without a Flash option show the Express offer (and a red notice) under "Flash".
+const effectiveTier = (item, tier) => (tier === 'flash' && item.noFlash ? 'express' : tier);
+
+function priceBlock(item, shownTier, lang) {
   const ui = UI[lang];
+  const tier = effectiveTier(item, shownTier);
   const amount = item.prices[tier];
   if (amount == null) {
     return `<div class="offer__price"${tierAttr(item, tier)}><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
@@ -73,7 +79,8 @@ function priceBlock(item, tier, lang) {
       + '</div>';
   }
   const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
-  return `<div class="offer__price"${tierAttr(item, tier)}>`
+  return `<div class="offer__price"${tierAttr(item, shownTier)}>`
+    + (tier !== shownTier ? `<p class="offer__unavailable" role="note">${ui.noFlash}</p>` : '')
     + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
     + compare
     + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
@@ -81,13 +88,14 @@ function priceBlock(item, tier, lang) {
     + '</div>';
 }
 
-function ctaBlock(item, tier, lang) {
+function ctaBlock(item, shownTier, lang) {
   const t = item[lang];
+  const tier = effectiveTier(item, shownTier);
   const btn = item.featured ? 'btn--light' : 'btn--dark';
   if (item.prices[tier] == null) {
     return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-tally="contact">${UI[lang].quoteCta}</a></div>`;
   }
-  return `<form class="offer__cta"${tierAttr(item, tier)} method="post" action="/api/checkout" data-checkout>`
+  return `<form class="offer__cta"${tierAttr(item, shownTier)} method="post" action="/api/checkout" data-checkout>`
     + `<input type="hidden" name="plan" value="${item.key}"><input type="hidden" name="speed" value="${tier}"><input type="hidden" name="lang" value="${lang}">`
     + `<button class="btn ${btn} btn--block" type="submit">${esc(t.cta)}</button></form>`;
 }
