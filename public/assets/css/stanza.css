@@ -1020,6 +1020,7 @@ summary::-webkit-details-marker { display: none; }
 .tm__btns { display: flex; flex-wrap: wrap; gap: 12px; }
 .features--4 { grid-template-columns: repeat(4, 1fr); gap: 28px; }
 .features--4 .feature { grid-template-columns: 44px 1fr; }
+.fine-callout__scope { padding: 10px 0 12px; border-top: 1px solid var(--dark-line); font-size: 12.5px; line-height: 1.45; font-style: italic; color: var(--muted-dark); }
 .fine-callout__foot { padding-top: 12px; border-top: 1px solid var(--dark-line); font-size: 13px; line-height: 1.4; color: var(--muted-dark); }
 .fine-callout__foot a { margin-left: 4px; text-decoration: underline; text-underline-offset: 2px; }
 .fine-callout__foot a:hover { color: var(--blue-300); }
