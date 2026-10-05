@@ -993,6 +993,71 @@ summary::-webkit-details-marker { display: none; }
 .promise__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--blue-300)); transform-origin: 0 50%; transform: scaleX(.08); transition: transform 2.6s var(--ease-out) .4s; }
 .promise-grid.is-visible .promise__bar i, .promise-grid:not([data-reveal]) .promise__bar i { transform: scaleX(1); }
 
+/* --- live icons (commitments, "why it matters", audiences): each glyph moves according to its meaning --- */
+.icon-box--live { background-size: 220% 100%; animation: liShimmer 4.5s linear infinite; }
+@keyframes liShimmer { from { background-position: 0% 0; } to { background-position: 220% 0; } }
+.li { overflow: visible; }
+.li > * { transform-box: fill-box; transform-origin: center; }
+/* premium: the big sparkle breathes and turns, the small ones twinkle */
+.li--sparkles > :nth-child(1) { animation: liSpark 3.2s ease-in-out infinite; }
+.li--sparkles > :nth-child(2), .li--sparkles > :nth-child(3) { animation: liTwinkle 1.6s ease-in-out infinite; }
+.li--sparkles > :nth-child(4) { animation: liTwinkle 1.6s ease-in-out .8s infinite; }
+@keyframes liSpark { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.14) rotate(12deg); } }
+@keyframes liTwinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .25; transform: scale(.6); } }
+/* secure: the check draws itself inside the shield */
+.li--shield-check > :nth-child(1) { animation: liPulse 3s ease-in-out infinite; }
+.li--shield-check > :nth-child(2) { stroke-dasharray: 10; animation: liDraw 3s ease-in-out infinite; }
+@keyframes liDraw { 0%, 15% { stroke-dashoffset: 10; } 45%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 10; } }
+@keyframes liPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+/* fair price: the wallet opens and closes */
+.li--wallet > :nth-child(1) { animation: liWallet 3s ease-in-out infinite; }
+@keyframes liWallet { 0%, 30%, 100% { transform: translateX(0); } 50%, 70% { transform: translateX(2px); } }
+.li--wallet > :nth-child(2) { animation: liBob 3s ease-in-out infinite; }
+/* tracking: the trend line draws upwards */
+.li--chart-line > :nth-child(2) { stroke-dasharray: 20; animation: liLine 3.4s ease-in-out infinite; }
+@keyframes liLine { 0%, 10% { stroke-dashoffset: 20; } 50%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 20; } }
+/* inboxes: a message drops into the tray */
+.li--inbox .li-drop { animation: liDrop 2.6s ease-in infinite; }
+@keyframes liDrop { 0% { transform: translateY(-3px); opacity: 0; } 20% { opacity: 1; } 60% { transform: translateY(9px); opacity: 1; } 75%, 100% { transform: translateY(10px); opacity: 0; } }
+/* accessibility: the scan frame closes in, the lens looks around */
+.li--scan-search > :nth-child(-n+4) { animation: liFrame 2.8s ease-in-out infinite; }
+.li--scan-search > :nth-child(1) { --dx: 1px; --dy: 1px; }
+.li--scan-search > :nth-child(2) { --dx: -1px; --dy: 1px; }
+.li--scan-search > :nth-child(3) { --dx: -1px; --dy: -1px; }
+.li--scan-search > :nth-child(4) { --dx: 1px; --dy: -1px; }
+.li--scan-search > :nth-child(5), .li--scan-search > :nth-child(6) { animation: liLook 2.8s ease-in-out infinite; }
+@keyframes liFrame { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(var(--dx), var(--dy)); } }
+@keyframes liLook { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1.5px, -1px); } 75% { transform: translate(1.5px, 1px); } }
+/* cookies: the cookie turns, crumbs blink like trackers */
+.li--cookie > :nth-child(2) { animation: liSpin 10s linear infinite; transform-origin: 50% 50%; }
+.li--cookie > :nth-child(odd), .li--cookie > :nth-child(n+3) { animation: liTwinkle 1.8s ease-in-out infinite; }
+.li--cookie > :nth-child(4) { animation-delay: .3s; } .li--cookie > :nth-child(6) { animation-delay: .6s; } .li--cookie > :nth-child(8) { animation-delay: .9s; }
+@keyframes liSpin { to { transform: rotate(360deg); } }
+/* large companies: windows light up one floor after the other */
+.li--building-2 > :nth-child(2) { animation: liWindow 2.4s steps(1) infinite; }
+.li--building-2 > :nth-child(1) { animation: liWindow 2.4s steps(1) 1.2s infinite; }
+@keyframes liWindow { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+/* SMEs: a teammate joins */
+.li--users > :nth-child(2), .li--users > :nth-child(3) { animation: liJoin 3.2s ease-in-out infinite; }
+@keyframes liJoin { 0%, 15% { opacity: 0; transform: translateX(-2px); } 40%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+/* online stores: the bag hops, the handle lifts */
+.li--shopping-bag > * { animation: liHop 2.4s ease-in-out infinite; }
+.li--shopping-bag > :nth-child(1) { animation: liHop 2.4s ease-in-out infinite, liHandle 2.4s ease-in-out infinite; }
+@keyframes liHop { 0%, 60%, 100% { transform: translateY(0); } 75% { transform: translateY(-2px); } 85% { transform: translateY(0); } }
+@keyframes liHandle { 0%, 60%, 100% { transform: translateY(0); } 75% { transform: translateY(1.5px); } }
+/* freelancers: a friendly nod */
+.li--user-round > :nth-child(1) { animation: liNod 2.8s ease-in-out infinite; }
+@keyframes liNod { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(.8px) rotate(-8deg); } 60% { transform: translateY(0) rotate(6deg); } }
+/* agencies: the briefcase swings */
+.li--briefcase > * { animation: liBob 2.6s ease-in-out infinite; }
+.li--briefcase > :nth-child(1) { animation: liBob 2.6s ease-in-out infinite, liLift 2.6s ease-in-out infinite; }
+@keyframes liLift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -1px; } }
+@keyframes liSwing { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
+/* associations: a heartbeat */
+.li--heart > :nth-child(1) { animation: liBeat 1.6s ease-in-out infinite; }
+@keyframes liBeat { 0%, 40%, 100% { transform: scale(1); } 15% { transform: scale(1.16); } 28% { transform: scale(1.05); } }
+@keyframes liBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
 /* --- server-side tracking scene: browser → your server → ad tools --- */
 .tm--follow { padding-top: 0; }
 .scene--flow > * { position: absolute; }
@@ -1389,6 +1454,7 @@ summary::-webkit-details-marker { display: none; }
 .js [data-reveal].is-visible { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
+  .li, .li *, .icon-box--live { animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; }
   .sv * { animation: none !important; opacity: 1 !important; }
   .tab-motif * { animation: none !important; stroke-dashoffset: 0 !important; transform: none; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
