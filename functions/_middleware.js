@@ -80,6 +80,13 @@ function translate(res, lang, url, env, catalog) {
         else el.removeAttribute('aria-current');
       },
     })
+    // Links to the client area open it in the visitor's language.
+    .on('a[href^="https://portail.stanzafix.com"]', {
+      element: (el) => {
+        const href = el.getAttribute('href');
+        if (!/[?&]lang=/.test(href)) el.setAttribute('href', `${href}${href.includes('?') ? '&' : '?'}lang=${lang}`);
+      },
+    })
     .on('[data-catalog]', { element: (el) => el.setInnerContent(renderSlot(el.getAttribute('data-catalog'), lang, catalog), { html: true }) })
     .on('[data-product-name]', { element: (el) => el.setInnerContent(productName(el.getAttribute('data-product-name'), lang)) });
 

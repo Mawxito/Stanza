@@ -82,8 +82,11 @@ async function confirmOrder(stripe, env, event) {
         speed: (session.metadata && session.metadata.speed) || 'standard',
         amount_cents: session.amount_total,
         payment_status: session.payment_status === 'paid' ? 'paid' : 'authorized',
+        // Quote paid from the portal (/devis/…): the order takes the quote's estimated timeline.
+        ...(session.metadata && session.metadata.quote ? { quote: session.metadata.quote } : {}),
       },
-      customer: { email: details.email, name: details.name || '' },
+      // The client area opens in the language the client paid in.
+      customer: { email: details.email, name: details.name || '', locale: session.locale === 'en' ? 'en' : 'fr' },
     });
     return;
   }
