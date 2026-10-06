@@ -16,6 +16,7 @@
     .steps { display: grid; gap: 12px; text-align: left; margin: 8px 0 8px; }
     .steps li { display: flex; gap: 12px; align-items: baseline; font-size: 16px; }
     .steps b { color: var(--blue-300); font-weight: 500; min-width: 20px; }
+    .success__note { max-width: 560px; font-size: 14px; line-height: 1.5; color: rgba(249,250,252,.72); padding: 12px 16px; border: 1px solid rgba(249,250,252,.18); border-radius: 12px; }
   </style>
 </head>
 <body>
@@ -41,43 +42,23 @@
       <h1 class="display display--md" data-i18n="ok.h1">Order confirmed.<br>Let's get you set up.</h1>
       <p class="body-lg" data-i18n="ok.lead">Your card has been authorized. It will only be charged once your delivery passes every acceptance check.</p>
       <ol class="steps">
-        <li><b>1</b><span data-i18n="ok.s1">Tell us about your domain, your website and your tools (2 minutes).</span></li>
-        <li><b>2</b><span data-i18n="ok.s2">A vetted specialist is matched and starts work.</span></li>
+        <li><b>1</b><span data-i18n="ok.s1">Check your inbox: we have sent you a link to open your client area.</span></li>
+        <li><b>2</b><span data-i18n="ok.s2">Send the items listed for your service there. The delivery time starts as soon as the last one arrives.</span></li>
         <li><b>3</b><span data-i18n="ok.s3">Follow your order from 0 to 100% in your client area, then approve the test report within the time you chose.</span></li>
       </ol>
-      <a class="btn btn--light" href="#" data-tally="start" data-i18n="ok.cta">Complete onboarding</a>
+      <p class="success__note" data-i18n="ok.keep">Remember to save your reports on your side: 30 days after your order is closed, all its data (the items you sent and the deliverables we sent you) is permanently deleted.</p>
+      <a class="btn btn--light" href="https://portail.stanzafix.com/client" data-i18n="ok.cta">Open my client area</a>
       <a class="text-btn" href="/" data-i18n="ok.back">Back to Stanza</a>
     </div>
   </main>
-  <script src="/assets/js/config.js"></script>
   <script>
+    // Keep the Stripe session ID when switching language.
     (function () {
-      var cfg = window.STANZA_CONFIG || { tally: {} };
-      var id = cfg.tally && cfg.tally.start;
-      var ok = id && id.indexOf('REPLACE_') !== 0;
-      var btn = document.querySelector('[data-tally="start"]');
-      // Stripe replaces {CHECKOUT_SESSION_ID} in the success URL.
-      // Forward it to Tally (hidden field "session_id") to match onboarding to the payment.
       var sessionId = (new URLSearchParams(location.search).get('session_id') || '').replace(/[^\w]/g, '');
-      var hidden = sessionId ? { session_id: sessionId } : {};
-      // Keep the session ID when switching language.
-      if (sessionId) {
-        document.querySelectorAll('[data-lang]').forEach(function (a) {
-          a.href = '?lang=' + a.getAttribute('data-lang') + '&session_id=' + sessionId;
-        });
-      }
-      if (ok) {
-        btn.href = 'https://tally.so/r/' + id + (sessionId ? '?session_id=' + sessionId : '');
-        var s = document.createElement('script');
-        s.src = 'https://tally.so/widgets/embed.js';
-        s.async = true;
-        document.head.appendChild(s);
-        btn.addEventListener('click', function (e) {
-          if (window.Tally) { e.preventDefault(); window.Tally.openPopup(id, { layout: 'modal', width: 640, hiddenFields: hidden }); }
-        });
-      } else {
-        btn.href = '/#faq';
-      }
+      if (!sessionId) return;
+      document.querySelectorAll('[data-lang]').forEach(function (a) {
+        a.href = '?lang=' + a.getAttribute('data-lang') + '&session_id=' + sessionId;
+      });
     })();
   </script>
 </body>

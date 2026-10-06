@@ -3,8 +3,11 @@
 //   speed: standard | express | flash
 //   lang:  fr | en (language of the Stripe Checkout page)
 // Creates a Stripe Checkout Session and redirects the buyer to it.
-import { BY_KEY, TIERS } from '../_lib/catalog.js';
-import { getStripe, getPriceId, captureMethod } from '../_lib/stripe.js';
+// Price and availability come from the portal (live catalog), read again here, server side:
+// the amount posted by the browser is never trusted.
+import { TIERS, effectiveTier } from '../_lib/catalog.js';
+import { getCatalogFresh } from '../_lib/live-catalog.js';
+import { getStripe, lineItem, captureMethod } from '../_lib/stripe.js';
 
 // Label shown in the Dashboard to compare checkout flows.
 const INTEGRATION_IDENTIFIER = 'stanza_pricing_qhtzmwkr';
@@ -35,23 +38,23 @@ export async function onRequestPost({ request, env }) {
   const field = (name) => (form ? String(form.get(name) || '') : '');
   const plan = field('plan');
   const lang = field('lang') === 'fr' ? 'fr' : 'en';
-  const item = BY_KEY[plan];
-  // Packs have a single price (the Standard one).
-  let speed = item && item.single ? 'standard' : TIERS.includes(field('speed')) ? field('speed') : 'standard';
-  // Services without Flash fall back to Express, the fastest option they offer.
-  if (item && item.noFlash && speed === 'flash') speed = 'express';
-  if (!item || item.prices[speed] == null) return Response.redirect(`${origin}/pricing`, 303);
+  const catalog = await getCatalogFresh(env);
+  const item = catalog.byKey[plan];
+  if (!item || item.active === false || item.quote) return Response.redirect(`${origin}/pricing`, 303);
+  // Packs have a single price (the Standard one). A speed that is not offered falls back to the closest one.
+  const speed = item.single ? 'standard' : effectiveTier(item, TIERS.includes(field('speed')) ? field('speed') : 'standard');
+  const amount = item.prices[speed];
+  if (amount == null) return Response.redirect(`${origin}/pricing`, 303);
 
   try {
     const stripe = getStripe(env);
-    const price = await getPriceId(stripe, plan, speed);
-    if (!price) throw new Error(`No active price for ${plan} (${speed})`);
+    const line = await lineItem(stripe, item, speed, amount);
     const speedLabel = SPEED_LABEL[lang][speed](item.days);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       locale: lang,
-      line_items: [{ price, quantity: 1 }],
+      line_items: [line],
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing#${plan}`,
       customer_creation: 'always',

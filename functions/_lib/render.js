@@ -1,6 +1,7 @@
 // Server-side HTML for the catalog slots (<div data-catalog="…">) of the pages.
-// Prices and texts come from catalog.js, so the site always matches Stripe.
-import { CATALOG, BY_KEY, TIERS, separatePrice } from './catalog.js';
+// Prices, availability and descriptions come from the live catalog (set in the portal,
+// see live-catalog.js), with catalog.js as the fallback; the checkout charges the same prices.
+import { CATALOG, BY_KEY, TIERS, separatePrice, effectiveTier } from './catalog.js';
 
 const UI = {
   fr: {
@@ -16,7 +17,9 @@ const UI = {
     solution: 'Voir la solution',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
-    noFlash: "Ce service n'est pas disponible en option Flash. L'option la plus rapide est l'Express (48 h maximum) : voici son prix.",
+    speedName: { standard: (d) => `la Standard (${d} jours ouvrés)`, express: () => "l'Express (48 h maximum)", flash: () => 'la Flash (24 h maximum)' },
+    tierName: { standard: 'Standard', express: 'Express', flash: 'Flash' },
+    unavailable: (from, to, faster) => `Ce service n'est pas disponible en option ${from}. L'option ${faster ? 'la plus rapide' : 'disponible la plus proche'} est ${to} : voici son prix.`,
     packDelay: 'Délai de livraison établi après commande',
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
@@ -35,7 +38,9 @@ const UI = {
     solution: 'See the solution',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
-    noFlash: 'This service is not available in Flash. The fastest option is Express (48 hours max): here is its price.',
+    speedName: { standard: (d) => `Standard (${d} business days)`, express: () => 'Express (48 hours max)', flash: () => 'Flash (24 hours max)' },
+    tierName: { standard: 'Standard', express: 'Express', flash: 'Flash' },
+    unavailable: (from, to, faster) => `This service is not available in ${from}. The ${faster ? 'fastest' : 'closest available'} option is ${to}: here is its price.`,
     packDelay: 'Delivery time set after the order',
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
@@ -58,17 +63,22 @@ export function productName(key, lang) {
 // Packs have a single price: no data-tier, so the delivery-speed selector never hides it.
 const tierAttr = (item, tier) => (item.single ? '' : ` data-tier="${tier}"`);
 
-// Services without a Flash option show the Express offer (and a red notice) under "Flash".
-const effectiveTier = (item, tier) => (tier === 'flash' && item.noFlash ? 'express' : tier);
+// A speed the service doesn't offer shows the closest one it offers, with a red notice.
+const SPEED_RANK = { standard: 0, express: 1, flash: 2 };
+function unavailableNote(item, shownTier, tier, lang) {
+  const ui = UI[lang];
+  const faster = SPEED_RANK[tier] < SPEED_RANK[shownTier];
+  return `<p class="offer__unavailable" role="note">${ui.unavailable(ui.tierName[shownTier], ui.speedName[tier](item.days), faster)}</p>`;
+}
 
-function priceBlock(item, shownTier, lang) {
+function priceBlock(item, shownTier, lang, byKey) {
   const ui = UI[lang];
   const tier = effectiveTier(item, shownTier);
   const amount = item.prices[tier];
   if (amount == null) {
     return `<div class="offer__price"${tierAttr(item, tier)}><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
   }
-  const ref = separatePrice(item, tier);
+  const ref = separatePrice(item, tier, byKey);
   const compare = ref && ref > amount
     ? `<p class="offer__compare">${ui.compare(formatPrice(ref, lang), formatPrice(ref - amount, lang))}</p>`
     : '';
@@ -82,7 +92,7 @@ function priceBlock(item, shownTier, lang) {
   }
   const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
   return `<div class="offer__price"${tierAttr(item, shownTier)}>`
-    + (tier !== shownTier ? `<p class="offer__unavailable" role="note">${ui.noFlash}</p>` : '')
+    + (tier !== shownTier ? unavailableNote(item, shownTier, tier, lang) : '')
     + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
     + compare
     + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
@@ -114,7 +124,7 @@ function quoteBlocks(item, lang) {
     + `<button class="btn btn--dark btn--block" type="submit">${esc(item[lang].cta)}</button></form>`;
 }
 
-function offerCard(item, lang) {
+function offerCard(item, lang, byKey) {
   const t = item[lang];
   const ui = UI[lang];
   const list = (items, cls = '') => `<ul class="offer__list${cls}">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
@@ -129,7 +139,7 @@ function offerCard(item, lang) {
     + `<p class="offer__sub">${esc(t.subtitle)}</p>`
     + (item.quote
       ? quoteBlocks(item, lang)
-      : (item.single ? ['standard'] : TIERS).map((tier) => priceBlock(item, tier, lang)).join('')
+      : (item.single ? ['standard'] : TIERS).map((tier) => priceBlock(item, tier, lang, byKey)).join('')
         + (item.single ? ['standard'] : TIERS).map((tier) => ctaBlock(item, tier, lang)).join(''))
     + `<p class="offer__short">${esc(t.short)}</p>`
     + list(t.included)
@@ -165,16 +175,20 @@ function serviceCard(item, lang) {
     + '</span></a>';
 }
 
+// Offers switched off in the portal are not shown (nor sold: see api/checkout.js).
+const shown = (cat, group) => cat.list.filter((p) => p.group === group && p.active !== false);
+const STATIC = { list: CATALOG, byKey: BY_KEY };
+
 const SLOTS = {
-  packs: (lang) => CATALOG.filter((p) => p.group === 'packs').map((p) => offerCard(p, lang)).join(''),
-  compliance: (lang) => CATALOG.filter((p) => p.group === 'compliance').map((p) => offerCard(p, lang)).join(''),
-  revenue: (lang) => CATALOG.filter((p) => p.group === 'revenue').map((p) => offerCard(p, lang)).join(''),
-  multi: (lang) => CATALOG.filter((p) => p.group === 'multi').map((p) => offerCard(p, lang)).join(''),
-  'overview-compliance': (lang) => CATALOG.filter((p) => p.group === 'compliance').map((p) => serviceCard(p, lang)).join(''),
-  'overview-revenue': (lang) => CATALOG.filter((p) => p.group === 'revenue').map((p) => serviceCard(p, lang)).join(''),
+  packs: (lang, cat) => shown(cat, 'packs').map((p) => offerCard(p, lang, cat.byKey)).join(''),
+  compliance: (lang, cat) => shown(cat, 'compliance').map((p) => offerCard(p, lang, cat.byKey)).join(''),
+  revenue: (lang, cat) => shown(cat, 'revenue').map((p) => offerCard(p, lang, cat.byKey)).join(''),
+  multi: (lang, cat) => shown(cat, 'multi').map((p) => offerCard(p, lang, cat.byKey)).join(''),
+  'overview-compliance': (lang, cat) => shown(cat, 'compliance').map((p) => serviceCard(p, lang)).join(''),
+  'overview-revenue': (lang, cat) => shown(cat, 'revenue').map((p) => serviceCard(p, lang)).join(''),
 };
 
-export function renderSlot(name, lang) {
+export function renderSlot(name, lang, cat = STATIC) {
   const slot = SLOTS[name];
-  return slot ? slot(lang) : '';
+  return slot ? slot(lang, cat) : '';
 }

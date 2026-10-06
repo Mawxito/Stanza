@@ -12,7 +12,6 @@ const SERVICES = ['consent', 'accessibility', 'inbox', 'tracking', 'leads'];
 export const CATALOG = [
   {
     key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 5, anchor: 'compliance',
-    noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
     prices: { standard: 49000, express: 67900, flash: null },
     fr: {
       name: 'Consent Integration',
@@ -103,7 +102,6 @@ export const CATALOG = [
   },
   {
     key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 5, anchor: 'tracking',
-    noFlash: true, // not offered in Flash: Express (48 h) is the fastest option
     prices: { standard: 59000, express: 81700, flash: null },
     fr: {
       name: 'Server-Side Tracking',
@@ -290,13 +288,22 @@ export const LEGACY_LOOKUP_KEYS = [
 export const LEGACY_PLANS = ['bundle', 'pack-6-domains'];
 
 // Sum of the bundled services at a tier: the "bought separately" reference price.
-export function separatePrice(item, tier) {
+// `byKey` is the catalog in use (the live one from the portal, or this file's).
+export function separatePrice(item, tier, byKey = BY_KEY) {
   if (!item.bundle) return null;
   let sum = 0;
   for (const k of item.bundle) {
-    const amount = BY_KEY[k].prices[tier];
+    const amount = byKey[k] && byKey[k].prices[tier];
     if (amount == null) return null;
     sum += amount;
   }
   return sum;
+}
+
+// A speed the service doesn't offer (null price) falls back to the closest one it offers:
+// Flash → Express → Standard, Express → Standard → Flash, Standard → Express → Flash.
+const FALLBACK = { flash: ['flash', 'express', 'standard'], express: ['express', 'standard', 'flash'], standard: ['standard', 'express', 'flash'] };
+export function effectiveTier(item, tier) {
+  for (const t of FALLBACK[tier] || FALLBACK.standard) if (item.prices[t] != null) return t;
+  return tier;
 }

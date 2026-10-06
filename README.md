@@ -18,7 +18,6 @@ public/                       Site publié par Cloudflare Pages (textes en angla
   index.html                  Accueil : description des services, sans aucun prix
   pricing.html                Page Tarifs (/pricing) : packs, services, délais, FAQ
   success.html                Retour après paiement
-  login.html, signup.html     Connexion / inscription à l'espace client (Google, Microsoft, e-mail)
   assets/js/auth.js           Comportement de ces deux pages
   _routes.json                Le middleware ne tourne pas sur /assets/*
   assets/js/config.js         ← IDs des formulaires Tally
@@ -50,10 +49,10 @@ Le choix Standard / Express / Flash en haut de la page Tarifs bascule tous les p
 ## Paiement : comment ça marche
 
 1. Le bouton d'une fiche envoie un formulaire `POST /api/checkout` avec l'offre (`plan`), le délai (`speed`) et la langue.
-2. La fonction récupère le prix par `lookup_key` (`stanza_<offre>_<délai>`, ex. `stanza_pack_complete_express`) et crée une **Checkout Session** dans la langue du visiteur (moyens de paiement dynamiques, adresse de facturation, numéro de TVA, délai rappelé sous le bouton, métadonnées `plan` et `speed`), puis redirige vers Stripe.
+2. La fonction relit le catalogue du portail (prix et disponibilité, côté serveur), réutilise le prix Stripe `lookup_key` s'il a le même montant, sinon crée un prix à la volée sur le même produit Stripe. Le prix Stripe par défaut se trouve par `lookup_key` (`stanza_<offre>_<délai>`, ex. `stanza_pack_complete_express`) et crée une **Checkout Session** dans la langue du visiteur (moyens de paiement dynamiques, adresse de facturation, numéro de TVA, délai rappelé sous le bouton, métadonnées `plan` et `speed`), puis redirige vers Stripe.
 3. Avec `CAPTURE_METHOD = "manual"` (par défaut), la carte est **autorisée** au paiement mais **débitée seulement après l'acceptance gate**. Vous capturez le paiement depuis le Dashboard Stripe (Paiements → « Capturer »), dans un délai de 7 jours, sinon l'autorisation expire. Avec `"automatic"`, le client est débité immédiatement.
 4. Stripe renvoie le client sur `/success?session_id=…`, qui transmet l'ID au formulaire d'onboarding Tally (champ caché `session_id`).
-5. Le **webhook** (et non la page de succès) enregistre la commande : `authorized` → `paid` à la capture, ou `canceled` si l'autorisation est libérée. Il stocke la commande dans le KV `ORDERS` s'il est lié, et l'envoie en JSON à `ORDER_NOTIFY_URL` (Slack, Make, Zapier…) si elle est définie.
+5. Le **webhook** (et non la page de succès) envoie chaque commande et chaque événement de paiement au **portail Stanza** (requête signée) dès que `PORTAL_URL` et `PORTAL_SIGNING_SECRET` sont définis : la commande, le compte client et la liste des éléments à fournir y sont créés. Sans ces secrets, l'ancien comportement s'applique : il stocke la commande dans le KV `ORDERS` s'il est lié, et l'envoie en JSON à `ORDER_NOTIFY_URL` (Slack, Make, Zapier…) si elle est définie.
 
 ## Mise en route
 
@@ -73,12 +72,16 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 1
 ### 2. Cloudflare Pages
 
 - Connectez le dépôt GitHub dans Cloudflare Pages : commande de build `npm install`, répertoire de sortie `public` (déjà défini dans `wrangler.toml`).
-- Ajoutez les secrets (Paramètres → Variables et secrets, type « Secret ») : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, et éventuellement `ORDER_NOTIFY_URL`.
+- Ajoutez les secrets (Paramètres → Variables et secrets, type « Secret ») : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PORTAL_URL` (`https://portail.stanzafix.com`) et `PORTAL_SIGNING_SECRET` (même valeur que `INTAKE_SIGNING_SECRET` du portail). `ORDER_NOTIFY_URL` n'est plus utile une fois le portail branché.
 - Facultatif : créez un namespace KV et liez-le sous le nom `ORDERS` pour garder un journal des commandes.
 
-### 3. Espace client (connexion / inscription)
+### 3. Espace client (portail Stanza)
 
-Les pages `/login` et `/signup` reprennent l'interface de Typeform (Google, Microsoft, e-mail ; pas de SSO) aux couleurs de Stanza. **L'espace client n'existe pas encore** : tant que `auth.ready` vaut `false` dans `public/assets/js/config.js`, les boutons affichent « L'espace client ouvre très bientôt » avec un lien de contact. Quand le service d'authentification sera prêt, renseignez `googleUrl`, `microsoftUrl`, `loginEndpoint`, `signupEndpoint` et passez `ready` à `true`.
+« Log in » et « Get started » mènent à `https://portail.stanzafix.com/login` et `/signup` ; les anciennes adresses `/login` et `/signup` du site y redirigent (`functions/_middleware.js`). Après paiement, `success.html` envoie le client vers son espace (`/client`).
+
+**Catalogue piloté depuis le portail** : prix, description et disponibilité de chaque offre (Admin → Services & modèles) sont lus sur `PORTAL_URL/api/catalog`, gardés une minute, et utilisés pour l'affichage comme pour le paiement. Prix vide = vitesse non proposée (le site affiche l'option la plus proche avec une note rouge) ; offre inactive = retirée du site et refusée au paiement. Si le portail ne répond pas, `functions/_lib/catalog.js` sert de secours.
+
+**Conservation** : les données d'une commande sont supprimées 30 jours après sa clôture (ou plus tôt par l'admin) ; la page de succès et la FAQ tarifs le rappellent au client.
 
 ### 3. Tally
 
@@ -105,7 +108,7 @@ Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout comm
 ## Personnalisation
 
 - **Couleurs** : variables `--blue-*`, `--dark`, `--light` en haut de `stanza.css`.
-- **Prix et textes des offres** : modifiez `functions/_lib/catalog.js` uniquement, puis relancez `npm run stripe:setup` (un nouveau prix est créé et l'ancien archivé).
+- **Prix, description et disponibilité** : depuis le portail (Admin → Services & modèles). Les autres textes des offres (titre, liste incluse, détail) restent dans `functions/_lib/catalog.js`, qui sert aussi de secours si le portail ne répond pas.
 - **Textes des pages** : anglais dans `public/*.html`, français dans `functions/_lib/strings-fr.js`, puis `npm run check:i18n`.
 - **Accessibilité** : `prefers-reduced-motion` coupe les animations ; onglets et slider utilisables au clavier.
 

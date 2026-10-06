@@ -44,7 +44,7 @@
       window.open('https://tally.so/r/' + id + qs, '_blank', 'noopener');
     }
   }
-  if (isSet(CFG.tally && CFG.tally.contact) || isSet(CFG.tally && CFG.tally.start)) loadTally();
+  if (isSet(CFG.tally && CFG.tally.contact)) loadTally();
 
   $$('[data-tally]').forEach(function (el) {
     var id = CFG.tally[el.getAttribute('data-tally')];
@@ -93,7 +93,6 @@
     if (checkoutError) checkoutError.hidden = false;
   }
 
-  $$('[data-href="login"]').forEach(function (el) { el.setAttribute('href', CFG.loginUrl || '#'); });
   $$('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
 
   /* ------------------------------------------------------------------

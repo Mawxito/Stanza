@@ -1,0 +1,80 @@
+// The catalog as set in the Stanza portal (Admin → Services & models): prices per speed
+// (null = speed not offered), availability, Standard delay and the description shown on
+// each offer card. Read from PORTAL_URL/api/catalog, kept one minute per isolate and
+// refreshed in the background. If the portal can't be reached, catalog.js is used as is.
+import { CATALOG, BY_KEY, TIERS } from './catalog.js';
+
+const FRESH_MS = 60_000;
+const RETRY_MS = 15_000;
+const STATIC = { list: CATALOG, byKey: BY_KEY, live: false };
+
+let current = null; // { at, catalog }
+let failedAt = 0;
+let inflight = null;
+
+const cents = (v) => (Number.isInteger(v) && v >= 0 && v <= 10_000_000 ? v : null);
+const text = (v) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 2000) : '');
+
+export function mergeCatalog(remote) {
+  const byRemote = new Map((Array.isArray(remote) ? remote : []).filter((s) => s && typeof s.key === 'string').map((s) => [s.key, s]));
+  const list = CATALOG.map((item) => {
+    const r = byRemote.get(item.key);
+    if (!r) return item;
+    const p = r.prices || {};
+    // Quotes keep no price; packs keep their single (Standard) price.
+    const prices = item.quote ? item.prices
+      : item.single ? { standard: cents(p.standard), express: null, flash: null }
+      : Object.fromEntries(TIERS.map((t) => [t, cents(p[t])]));
+    const offered = item.quote || TIERS.some((t) => prices[t] != null);
+    const d = r.description || {};
+    return {
+      ...item,
+      prices,
+      days: Number.isInteger(r.days) && r.days > 0 && r.days <= 60 ? r.days : item.days,
+      active: r.active !== false && offered,
+      fr: text(d.fr) ? { ...item.fr, short: text(d.fr) } : item.fr,
+      en: text(d.en) ? { ...item.en, short: text(d.en) } : item.en,
+    };
+  });
+  return { list, byKey: Object.fromEntries(list.map((p) => [p.key, p])), live: true };
+}
+
+async function load(env) {
+  try {
+    const res = await fetch(`${String(env.PORTAL_URL).replace(/\/$/, '')}/api/catalog`, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!res.ok) throw new Error(`portal responded ${res.status}`);
+    const body = await res.json();
+    if (!Array.isArray(body.services) || body.services.length === 0) throw new Error('empty catalog');
+    current = { at: Date.now(), catalog: mergeCatalog(body.services) };
+    failedAt = 0;
+  } catch (err) {
+    failedAt = Date.now();
+    console.warn('[catalog] portal unavailable, using the last known catalog:', err && err.message);
+  } finally {
+    inflight = null;
+  }
+}
+
+/** Live catalog; `waitUntil` (from the Pages context) lets a stale copy refresh after the response. */
+export async function getCatalog(env, waitUntil) {
+  if (!env || !env.PORTAL_URL) return STATIC;
+  const now = Date.now();
+  const stale = !current || now - current.at > FRESH_MS;
+  if (stale && now - failedAt > RETRY_MS && !inflight) inflight = load(env);
+  if (!current && inflight) await inflight; // first request of the isolate
+  else if (inflight && waitUntil) waitUntil(inflight);
+  return current ? current.catalog : STATIC;
+}
+
+/** Same, but always as fresh as possible: used by the checkout, where the price is charged. */
+export async function getCatalogFresh(env) {
+  if (!env || !env.PORTAL_URL) return STATIC;
+  if (!current || Date.now() - current.at > 10_000) {
+    if (!inflight) inflight = load(env);
+    await inflight;
+  }
+  return current ? current.catalog : STATIC;
+}

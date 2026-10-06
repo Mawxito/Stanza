@@ -2,14 +2,21 @@
 // The pages are written in English; for French visitors the texts marked with
 // data-i18n are swapped at the edge from strings-fr.js, so there is no flash
 // of English and search engines get real French HTML. The catalog slots are
-// filled from catalog.js in both languages.
+// filled from the live catalog (set in the portal, catalog.js as fallback) in both languages.
+// The old /login and /signup pages now live in the client area (Stanza portal).
 import { detectLang, langCookie } from './_lib/i18n.js';
 import { FR } from './_lib/strings-fr.js';
 import { renderSlot, productName } from './_lib/render.js';
+import { getCatalog } from './_lib/live-catalog.js';
+import { portalOrigin } from './_lib/portal.js';
 
-export async function onRequest({ request, next, env }) {
+const PORTAL_PAGES = { '/login': '/login', '/login.html': '/login', '/signup': '/signup', '/signup.html': '/signup' };
+
+export async function onRequest({ request, next, env, waitUntil }) {
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/') || (request.method !== 'GET' && request.method !== 'HEAD')) return next();
+  const portalPath = PORTAL_PAGES[url.pathname.replace(/\/$/, '') || '/'];
+  if (portalPath) return Response.redirect(`${portalOrigin(env)}${portalPath}`, 301);
 
   // The same URL serves two languages: always fetch the full page, never a 304.
   const headers = new Headers(request.headers);
@@ -26,7 +33,8 @@ export async function onRequest({ request, next, env }) {
   out.headers.set('vary', 'Cookie, Accept-Language');
   out.headers.set('content-language', lang);
   if (chosen) out.headers.append('set-cookie', langCookie(lang));
-  return translate(out, lang, url, env);
+  const catalog = await getCatalog(env, waitUntil);
+  return translate(out, lang, url, env, catalog);
 }
 
 // The CSS and JS keep the same file names between deployments, so browsers and
@@ -51,7 +59,7 @@ const versioned = (env, origin, attr) => ({
   },
 });
 
-function translate(res, lang, url, env) {
+function translate(res, lang, url, env, catalog) {
   const page = `${url.origin}${url.pathname}`;
   const rewriter = new HTMLRewriter()
     .on('html', { element: (el) => el.setAttribute('lang', lang) })
@@ -71,7 +79,7 @@ function translate(res, lang, url, env) {
         else el.removeAttribute('aria-current');
       },
     })
-    .on('[data-catalog]', { element: (el) => el.setInnerContent(renderSlot(el.getAttribute('data-catalog'), lang), { html: true }) })
+    .on('[data-catalog]', { element: (el) => el.setInnerContent(renderSlot(el.getAttribute('data-catalog'), lang, catalog), { html: true }) })
     .on('[data-product-name]', { element: (el) => el.setInnerContent(productName(el.getAttribute('data-product-name'), lang)) });
 
   if (lang === 'fr') {

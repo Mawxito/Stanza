@@ -1,11 +1,16 @@
 // POST /api/stripe-webhook
 // Fulfillment runs here, never on success.html: buyers don't always reach the return page.
 //
-// Optional bindings:
+// With PORTAL_URL and PORTAL_SIGNING_SECRET set, every order and payment event goes to the
+// Stanza portal (signed): the order, the client account and the checklist are created there.
+// Without them (before the portal is wired), the previous behaviour below applies.
+//
+// Optional bindings (previous behaviour):
 //   ORDERS            KV namespace — stores one record per order (idempotent)
 //   ORDER_NOTIFY_URL  URL that receives a JSON POST for each order event
 //                     (Slack incoming webhook, Make, Zapier, n8n…)
 import { getStripe } from '../_lib/stripe.js';
+import { portalConfigured, sendToPortal } from '../_lib/portal.js';
 
 export async function onRequestPost({ request, env }) {
   if (!env.STRIPE_WEBHOOK_SECRET) {
@@ -28,18 +33,21 @@ export async function onRequestPost({ request, env }) {
     switch (event.type) {
       case 'checkout.session.completed':
       case 'checkout.session.async_payment_succeeded':
-        await confirmOrder(stripe, env, event.data.object.id);
+        await confirmOrder(stripe, env, event);
         break;
       case 'checkout.session.async_payment_failed':
-        await recordOrder(env, event.data.object.payment_intent, { status: 'payment_failed', session: event.data.object.id });
+        if (portalConfigured(env)) await portalPayment(env, event, event.data.object.payment_intent, 'failed');
+        else await recordOrder(env, event.data.object.payment_intent, { status: 'payment_failed', session: event.data.object.id });
         break;
       case 'payment_intent.succeeded':
         // With manual capture this fires when you capture after the acceptance gate.
-        await recordOrder(env, event.data.object.id, { status: 'paid' });
+        if (portalConfigured(env)) await portalPayment(env, event, event.data.object.id, 'paid');
+        else await recordOrder(env, event.data.object.id, { status: 'paid' });
         break;
       case 'payment_intent.canceled':
         // Authorization released (cancelled or expired before capture).
-        await recordOrder(env, event.data.object.id, { status: 'canceled' });
+        if (portalConfigured(env)) await portalPayment(env, event, event.data.object.id, 'cancelled');
+        else await recordOrder(env, event.data.object.id, { status: 'canceled' });
         break;
       default:
         break;
@@ -54,8 +62,8 @@ export async function onRequestPost({ request, env }) {
   });
 }
 
-async function confirmOrder(stripe, env, sessionId) {
-  const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['payment_intent'] });
+async function confirmOrder(stripe, env, event) {
+  const session = await stripe.checkout.sessions.retrieve(event.data.object.id, { expand: ['payment_intent'] });
   const pi = session.payment_intent;
   const authorized = pi && typeof pi === 'object' && pi.status === 'requires_capture';
 
@@ -63,6 +71,22 @@ async function confirmOrder(stripe, env, sessionId) {
   if (session.payment_status === 'unpaid' && !authorized) return;
 
   const piId = typeof pi === 'string' ? pi : pi && pi.id;
+  if (portalConfigured(env)) {
+    const details = session.customer_details || {};
+    await sendToPortal(env, '/api/intake/orders', {
+      event_id: event.id,
+      order: {
+        external_ref: piId,
+        session: session.id,
+        plan: session.metadata && session.metadata.plan, // catalog key: inbox, consent, pack-complete…
+        speed: (session.metadata && session.metadata.speed) || 'standard',
+        amount_cents: session.amount_total,
+        payment_status: session.payment_status === 'paid' ? 'paid' : 'authorized',
+      },
+      customer: { email: details.email, name: details.name || '' },
+    });
+    return;
+  }
   await recordOrder(env, piId, {
     status: session.payment_status === 'paid' ? 'paid' : 'authorized',
     session: session.id,
@@ -102,4 +126,13 @@ async function recordOrder(env, paymentIntentId, data, isNew = false) {
     if (!res.ok) throw new Error(`notify failed with ${res.status}`);
   }
   if (env.ORDERS) await env.ORDERS.put(key, JSON.stringify(order));
+}
+
+// The portal updates the matching order, or ignores the event if it doesn't know it.
+async function portalPayment(env, event, paymentIntentId, status) {
+  if (!paymentIntentId) return;
+  await sendToPortal(env, '/api/intake/orders', {
+    event_id: event.id,
+    order: { external_ref: paymentIntentId, payment_status: status },
+  });
 }
