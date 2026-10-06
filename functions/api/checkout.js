@@ -51,7 +51,7 @@ export async function onRequestPost({ request, env }) {
     const line = await lineItem(stripe, item, speed, amount);
     const speedLabel = SPEED_LABEL[lang][speed](item.days);
 
-    const session = await stripe.checkout.sessions.create({
+    const params = {
       mode: 'payment',
       locale: lang,
       line_items: [line],
@@ -68,7 +68,24 @@ export async function onRequestPost({ request, env }) {
         metadata: { plan, speed },
       },
       integration_identifier: INTEGRATION_IDENTIFIER,
-    });
+    };
+    // Stripe invoice after payment (listed in the portal, Admin → Invoices). STRIPE_INVOICES=off disables it.
+    // If Stripe refuses the option for this payment, the session is created again without it: checkout never breaks.
+    let session;
+    if (env.STRIPE_INVOICES !== 'off') {
+      try {
+        session = await stripe.checkout.sessions.create({
+          ...params,
+          invoice_creation: {
+            enabled: true,
+            invoice_data: { description: `Stanza — ${item[lang].name}`, metadata: { plan, speed } },
+          },
+        });
+      } catch (err) {
+        console.warn('[checkout] invoice_creation refused, retrying without it:', err && err.message);
+      }
+    }
+    if (!session) session = await stripe.checkout.sessions.create(params);
 
     return Response.redirect(session.url, 303);
   } catch (err) {

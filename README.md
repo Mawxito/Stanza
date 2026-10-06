@@ -81,6 +81,8 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 1
 
 **Catalogue piloté depuis le portail** : prix, description et disponibilité de chaque offre (Admin → Services & modèles) sont lus sur `PORTAL_URL/api/catalog`, gardés une minute, et utilisés pour l'affichage comme pour le paiement. Prix vide = vitesse non proposée (le site affiche l'option la plus proche avec une note rouge) ; offre inactive = retirée du site et refusée au paiement. Si le portail ne répond pas, `functions/_lib/catalog.js` sert de secours.
 
+**Factures** : chaque paiement génère une facture Stripe (`invoice_creation`), listée dans le portail (Admin → Factures). Stripe facture ce service à part ; pour le couper, ajoutez la variable `STRIPE_INVOICES=off` dans Cloudflare Pages.
+
 **Conservation** : les données d'une commande sont supprimées 30 jours après sa clôture (ou plus tôt par l'admin) ; la page de succès et la FAQ tarifs le rappellent au client.
 
 ### 3. Tally
