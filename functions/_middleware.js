@@ -34,6 +34,7 @@ export async function onRequest({ request, next, env, waitUntil }) {
   out.headers.set('content-language', lang);
   if (chosen) out.headers.append('set-cookie', langCookie(lang));
   const catalog = await getCatalog(env, waitUntil);
+  out.headers.set('x-stanza-catalog', catalog.live ? 'portal' : 'static');
   return translate(out, lang, url, env, catalog);
 }
 

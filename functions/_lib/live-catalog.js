@@ -11,8 +11,10 @@ const STATIC = { list: CATALOG, byKey: BY_KEY, live: false };
 let current = null; // { at, catalog }
 let failedAt = 0;
 let inflight = null;
+let lastError = '';
 
-const cents = (v) => (Number.isInteger(v) && v >= 0 && v <= 10_000_000 ? v : null);
+// A price under 1 € is not a real price (Stripe refuses under 0.50 €): treated as "not offered".
+const cents = (v) => (Number.isInteger(v) && v >= 100 && v <= 10_000_000 ? v : null);
 const text = (v) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 2000) : '');
 
 export function mergeCatalog(remote) {
@@ -42,7 +44,7 @@ export function mergeCatalog(remote) {
 async function load(env) {
   try {
     const res = await fetch(`${String(env.PORTAL_URL).replace(/\/$/, '')}/api/catalog`, {
-      headers: { accept: 'application/json' },
+      headers: { accept: 'application/json', 'user-agent': 'stanzafix-site/1.0 (+https://stanzafix.com)' },
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) throw new Error(`portal responded ${res.status}`);
@@ -50,8 +52,10 @@ async function load(env) {
     if (!Array.isArray(body.services) || body.services.length === 0) throw new Error('empty catalog');
     current = { at: Date.now(), catalog: mergeCatalog(body.services) };
     failedAt = 0;
+    lastError = '';
   } catch (err) {
     failedAt = Date.now();
+    lastError = String((err && err.message) || err).slice(0, 200);
     console.warn('[catalog] portal unavailable, using the last known catalog:', err && err.message);
   } finally {
     inflight = null;
@@ -77,4 +81,13 @@ export async function getCatalogFresh(env) {
     await inflight;
   }
   return current ? current.catalog : STATIC;
+}
+
+/** For /api/portal-status: where the prices shown right now come from. */
+export function catalogStatus(env) {
+  return {
+    source: !env || !env.PORTAL_URL ? 'static (PORTAL_URL not set)' : current ? 'portal' : 'static (portal unreachable)',
+    fetched_at: current ? new Date(current.at).toISOString() : null,
+    last_error: lastError || null,
+  };
 }
