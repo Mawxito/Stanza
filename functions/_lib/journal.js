@@ -338,7 +338,7 @@ function articleMain(post, posts, lang) {
     + `<p class="hero__lead jr-article__lead" lang="${post.lang}" data-intro>${esc(post.excerpt)}</p>`
     + `<div data-intro>${byline(post, lang, ' jr-byline--dark')}</div>`
     + '</div></header>'
-    + (post.cover_url ? `<figure class="jr-article__cover container"><img src="${esc(post.cover_url)}" alt="" decoding="async"></figure>` : '')
+    + (post.cover_url ? `<figure class="jr-article__cover container"><img src="${esc(post.cover_url)}" alt="${esc(post.cover_alt || '')}" decoding="async"></figure>` : '')
     + '<div class="container container--sm jr-article__body">'
     + `<div class="jr-prose" lang="${post.lang}">${renderMarkdown(post.body)}</div>`
     + '<footer class="jr-article__foot">'
@@ -353,9 +353,9 @@ function jsonLd(post, canonical, origin) {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
-    description: post.excerpt,
+    description: post.seo_description || post.excerpt,
     datePublished: post.published_at,
-    dateModified: post.published_at,
+    dateModified: post.updated_at || post.published_at,
     inLanguage: post.lang,
     url: canonical,
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
@@ -401,8 +401,8 @@ export async function journalArticle({ request, env, waitUntil, params }) {
     + post.tags.map((t) => `<meta property="article:tag" content="${esc(t)}">`).join('')
     + jsonLd(post, canonical, url.origin);
   const rw = withHead(new HTMLRewriter(), {
-    title: `${post.title} — Stanza`,
-    head: headTags({ description: post.excerpt, canonical, ogTitle: post.title, ogType: 'article', image: post.cover_url, extra }),
+    title: `${post.seo_title || post.title} — Stanza`,
+    head: headTags({ description: post.seo_description || post.excerpt, canonical, ogTitle: post.seo_title || post.title, ogType: 'article', image: post.cover_url, extra }),
   }).on('main', { element: (el) => el.setInnerContent(articleMain(post, posts, lang), { html: true }) });
   return html(rw.transform(tpl), 200);
 }

@@ -16,6 +16,8 @@ export function inline(text) {
   const hold = (html) => `${HOLD}${held.push(html) - 1}${HOLD}`;
   let s = String(text).replace(/\u0000/g, '')
     .replace(/`([^`\n]+)`/g, (_, code) => hold(`<code>${code}</code>`))
+    // Images : https uniquement (les autres adresses restent du texte).
+    .replace(/!\[([^\]\n]*)\]\((https:\/\/[^\s()]+)\)/g, (_, alt, src) => hold(`<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`))
     .replace(/\[([^\]\n]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g, (_, label, href) => { // one level of (…) in URLs
       // The text is already escaped: &amp; in a URL is the correct attribute value.
       const url = href.replace(/&amp;/g, '&');

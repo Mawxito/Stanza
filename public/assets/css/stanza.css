@@ -1880,3 +1880,7 @@ summary::-webkit-details-marker { display: none; }
   .glass-card--fix { right: 3%; bottom: 4%; }
   .how { padding: 88px 0; }
 }
+
+/* Images insérées dans les articles du journal depuis l'éditeur du portail */
+.jr-prose img { display: block; max-width: 100%; height: auto; margin: 1.6em auto; border-radius: 18px; box-shadow: 0 24px 50px -32px rgba(18, 48, 110, 0.45); }
+.jr-prose p > img:only-child { margin: 0 auto; }

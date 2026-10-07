@@ -62,7 +62,11 @@ export function normalizePost(p, now = Date.now()) {
     tags,
     author: { name, key: slugify(name) || 'stanza', role: a.role === 'specialist' ? 'specialist' : 'writer', avatar_url: httpsUrl(a.avatar_url) },
     cover_url: httpsUrl(p.cover_url),
+    cover_alt: text(p.cover_alt, 200),
+    seo_title: text(p.seo_title, 80),
+    seo_description: text(p.seo_description, 200),
     published_at: new Date(published).toISOString(),
+    updated_at: typeof p.updated_at === 'string' && !Number.isNaN(Date.parse(p.updated_at)) ? new Date(p.updated_at).toISOString() : new Date(published).toISOString(),
     reading_minutes: Number.isInteger(p.reading_minutes) && p.reading_minutes > 0 && p.reading_minutes <= 120
       ? p.reading_minutes
       : Math.max(1, Math.round(words / 220)),
