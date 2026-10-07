@@ -11,7 +11,7 @@ const SERVICES = ['consent', 'accessibility', 'inbox', 'tracking', 'leads'];
 
 export const CATALOG = [
   {
-    key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 7, anchor: 'compliance',
+    key: 'consent', id: 'S1', group: 'compliance', pillar: 'compliance', icon: 'i-cookie', days: 5, anchor: 'compliance',
     prices: { standard: 49000, express: 67900, flash: null },
     fr: {
       name: 'Consent Integration',
@@ -41,7 +41,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'accessibility', id: 'S2', group: 'compliance', pillar: 'compliance', icon: 'i-scan-search', days: 7, anchor: 'accessibility',
+    key: 'accessibility', id: 'S2', group: 'compliance', pillar: 'compliance', icon: 'i-scan-search', days: 5, anchor: 'accessibility',
     prices: { standard: 29000, express: 40300, flash: 44900 },
     fr: {
       name: 'Accessibility Fast-Scan',
@@ -71,7 +71,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'inbox', id: 'S3', group: 'revenue', pillar: 'revenue', icon: 'i-mail-check', days: 7, anchor: 'deliverability',
+    key: 'inbox', id: 'S3', group: 'revenue', pillar: 'revenue', icon: 'i-mail-check', days: 5, anchor: 'deliverability',
     prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Inbox Protocol',
@@ -101,7 +101,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 7, anchor: 'tracking',
+    key: 'tracking', id: 'S4', group: 'revenue', pillar: 'revenue', icon: 'i-server', days: 5, anchor: 'tracking',
     prices: { standard: 59000, express: 81700, flash: null },
     fr: {
       name: 'Server-Side Tracking',
@@ -131,7 +131,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'leads', id: 'S5', group: 'revenue', pillar: 'revenue', icon: 'i-bell-ring', days: 7, anchor: 'leads',
+    key: 'leads', id: 'S5', group: 'revenue', pillar: 'revenue', icon: 'i-bell-ring', days: 5, anchor: 'leads',
     prices: { standard: 39000, express: 54100, flash: 61000 },
     fr: {
       name: 'Lead Fast-Response',
@@ -161,7 +161,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'pack-compliance', id: 'B1', group: 'packs', pillar: 'compliance', icon: 'i-shield-check', days: 7,
+    key: 'pack-compliance', id: 'B1', group: 'packs', pillar: 'compliance', icon: 'i-shield-check', days: 5,
     bundle: ['consent', 'accessibility'],
     single: true, // one price; the delivery time is set after the order
     prices: { standard: 69000, express: null, flash: null },
@@ -189,7 +189,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'pack-revenue', id: 'B2', group: 'packs', pillar: 'revenue', icon: 'i-chart-line', days: 7,
+    key: 'pack-revenue', id: 'B2', group: 'packs', pillar: 'revenue', icon: 'i-chart-line', days: 5,
     bundle: ['inbox', 'tracking', 'leads'],
     single: true, // one price; the delivery time is set after the order
     prices: { standard: 119000, express: null, flash: null },
@@ -217,7 +217,7 @@ export const CATALOG = [
     },
   },
   {
-    key: 'pack-complete', id: 'B3', group: 'packs', pillar: 'both', icon: 'i-sparkles', days: 7, featured: true,
+    key: 'pack-complete', id: 'B3', group: 'packs', pillar: 'both', icon: 'i-sparkles', days: 5, featured: true,
     bundle: SERVICES,
     single: true, // one price; the delivery time is set after the order
     prices: { standard: 185000, express: null, flash: null },
