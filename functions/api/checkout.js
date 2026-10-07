@@ -4,8 +4,10 @@
 //   lang:  fr | en (language of the Stripe Checkout page)
 // Creates a Stripe Checkout Session and redirects the buyer to it.
 // Price and availability come from the portal (live catalog), read again here, server side:
-// the amount posted by the browser is never trusted.
-import { TIERS, effectiveTier } from '../_lib/catalog.js';
+// the amount posted by the browser is never trusted. During a promotion (set in the portal) the
+// catalog price is already the discounted one: that is what is charged, and the line says why.
+import { TIERS, effectiveTier, activePromo } from '../_lib/catalog.js';
+import { formatPrice, discountText, promoUntil } from '../_lib/render.js';
 import { getCatalogFresh } from '../_lib/live-catalog.js';
 import { getStripe, lineItem, captureMethod } from '../_lib/stripe.js';
 
@@ -24,6 +26,11 @@ const DELAY_NOTE = {
   fr: (s, refund) => `Délai de livraison : ${s}, garanti (en cas de retard, ${refund} du prix HT remboursé ; délai suspendu seulement si un élément manque ou, en Express et Flash, pendant une urgence signalée par votre expert : voir la FAQ). Votre carte est autorisée maintenant et débitée seulement après validation de la livraison.`,
   en: (s, refund) => `Delivery time: ${s}, guaranteed (if we are late, ${refund} of the price excl. VAT is refunded; the clock pauses only if an item is missing or, in Express and Flash, during an urgent issue reported by your expert: see the FAQ). Your card is authorized now and charged only once the delivery is verified.`,
 };
+const PROMO_TEXT = {
+  fr: (regular, label, off, until) => `Prix habituel ${regular} HT · ${label}${off ? ` ${off}` : ''}${until ? `, ${until}` : ''}`,
+  en: (regular, label, off, until) => `Regular price ${regular} excl. VAT · ${label}${off ? ` ${off}` : ''}${until ? `, ${until}` : ''}`,
+};
+
 // Late-delivery refund promised on the site: half in Standard, everything in Express / Flash.
 const LATE_REFUND = { standard: '50 %', express: '100 %', flash: '100 %' };
 
@@ -46,9 +53,18 @@ export async function onRequestPost({ request, env }) {
   const amount = item.prices[speed];
   if (amount == null) return Response.redirect(`${origin}/pricing`, 303);
 
+  const promo = activePromo(item, speed);
+  const promoLine = promo && {
+    id: promo.id,
+    name: `${item[lang].name} — ${promo.label[lang]}${discountText(promo, lang) ? ` (${discountText(promo, lang)})` : ''}`,
+    description: PROMO_TEXT[lang](formatPrice(item.regular[speed], lang), promo.label[lang], discountText(promo, lang), promoUntil(promo, lang)),
+  };
+  // metadata.promo: the promotion behind the price, on the session and the payment.
+  const metadata = promo ? { plan, speed, promo: promo.id } : { plan, speed };
+
   try {
     const stripe = getStripe(env);
-    const line = await lineItem(stripe, item, speed, amount);
+    const line = await lineItem(stripe, item, speed, amount, promoLine);
     const speedLabel = SPEED_LABEL[lang][speed](item.days);
 
     const params = {
@@ -61,11 +77,11 @@ export async function onRequestPost({ request, env }) {
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
       custom_text: { submit: { message: item.group === 'packs' ? PACK_NOTE[lang] : DELAY_NOTE[lang](speedLabel, lang === 'fr' ? LATE_REFUND[speed] : LATE_REFUND[speed].replace(' ', '')) } },
-      metadata: { plan, speed },
+      metadata,
       payment_intent_data: {
         capture_method: captureMethod(env),
-        description: `Stanza — ${item.en.name} (${speed})`,
-        metadata: { plan, speed },
+        description: `Stanza — ${item.en.name} (${speed})${promo ? ` · ${promo.label.en}` : ''}`,
+        metadata,
       },
       integration_identifier: INTEGRATION_IDENTIFIER,
     };
@@ -78,7 +94,7 @@ export async function onRequestPost({ request, env }) {
           ...params,
           invoice_creation: {
             enabled: true,
-            invoice_data: { description: `Stanza — ${item[lang].name}`, metadata: { plan, speed } },
+            invoice_data: { description: `Stanza — ${item[lang].name}${promo ? ` · ${promo.label[lang]}` : ''}`, metadata },
           },
         });
       } catch (err) {

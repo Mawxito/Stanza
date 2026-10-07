@@ -510,6 +510,41 @@
     });
   });
 
+  /* ------------------------------------------------------------------
+   * Promotion banner: live countdown to the end of the promotion
+   * (rendered server side by functions/_lib/render.js; hidden once it ends)
+   * ------------------------------------------------------------------ */
+  $$('[data-countdown]').forEach(function (el) {
+    var end = Date.parse(el.getAttribute('data-countdown'));
+    var bar = el.closest('[data-promo-bar]');
+    if (isNaN(end)) return;
+    var cells = {};
+    $$('[data-cd]', el).forEach(function (b) { cells[b.getAttribute('data-cd')] = b; });
+    var timer;
+    var set = function (key, value) {
+      var b = cells[key];
+      if (!b) return;
+      var text = key === 'd' ? String(value) : (value < 10 ? '0' : '') + value;
+      if (b.textContent === text) return;
+      b.textContent = text;
+      if (key === 'd') b.parentNode.hidden = !value;
+      if (!reduceMotion) { b.classList.remove('is-tick'); void b.offsetWidth; b.classList.add('is-tick'); }
+    };
+    var tick = function () {
+      var left = Math.max(0, Math.floor((end - Date.now()) / 1000));
+      set('d', Math.floor(left / 86400));
+      set('h', Math.floor((left % 86400) / 3600));
+      set('m', Math.floor((left % 3600) / 60));
+      set('s', left % 60);
+      if (!left) {
+        clearInterval(timer);
+        if (bar) bar.hidden = true; // the promotion is over: prices go back to normal on the next page load
+      }
+    };
+    tick();
+    timer = setInterval(tick, 1000);
+  });
+
   // Cards with a glow that follows the pointer (service cards on the home page).
   $$('[data-glow]').forEach(function (el) {
     el.addEventListener('pointermove', function (e) {

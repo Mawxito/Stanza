@@ -91,14 +91,14 @@
               </div>
               <div class="dropdown__col">
                 <p class="dropdown__title"><svg width="14" height="14"><use href="#i-newspaper"/></svg><span data-i18n="nav.blog">Blog</span></p>
-                <a class="dropdown__feature" href="#">
+                <a class="dropdown__feature" href="/journal">
                   <span class="dropdown__feature-img" aria-hidden="true">
                     <span class="mini-record"><b>TXT</b> v=DMARC1; p=reject;</span>
                     <span class="mini-record"><b>TXT</b> v=spf1 include:_spf… -all</span>
                   </span>
                   <span class="dropdown__feature-text" data-i18n="nav.blog.text">Our guides to SPF, DKIM, DMARC, consent and accessibility.</span>
                 </a>
-                <a class="arrow-link" href="#"><span data-i18n="nav.blog.cta">Browse blog</span> <span aria-hidden="true">→</span></a>
+                <a class="arrow-link" href="/journal"><span data-i18n="nav.blog.cta">Browse blog</span> <span aria-hidden="true">→</span></a>
               </div>
             </div>
           </div>
@@ -130,6 +130,8 @@
 </header>
 
 <main id="main">
+  <!-- Promotions running now (set in the portal): banner with a countdown, empty otherwise -->
+  <div data-catalog="promo-pricing"></div>
   <!-- ============================== PRICING HERO ============================== -->
   <section class="pr-hero u-dark">
     <canvas class="pr-hero__stars" data-stars data-stars-pace="slow" aria-hidden="true"></canvas>
@@ -152,7 +154,7 @@
       <div class="container speed-bar__inner">
         <p class="speed-bar__label" id="speed-label"><svg width="16" height="16"><use href="#i-clock"/></svg><span data-i18n="pr.speed">Delivery time</span></p>
         <div class="speed" role="radiogroup" aria-labelledby="speed-label">
-          <label class="speed__opt"><input type="radio" name="speed" value="standard" checked><span><b>Standard</b><small data-i18n="pr.speed.std">5 business days</small></span></label>
+          <label class="speed__opt"><input type="radio" name="speed" value="standard" checked><span><b>Standard</b><small data-i18n="pr.speed.std">7 business days</small></span></label>
           <label class="speed__opt"><input type="radio" name="speed" value="express"><span><b>Express</b><small data-i18n="pr.speed.exp">48 hours max</small></span></label>
           <label class="speed__opt"><input type="radio" name="speed" value="flash"><span><b>Flash</b><small data-i18n="pr.speed.fla">24 hours max</small></span></label>
         </div>
@@ -236,7 +238,7 @@
         </details>
         <details class="faq__item">
           <summary><span data-i18n="pr.faq.2.q">What is the difference between Standard, Express and Flash?</span><span class="faq__icon" aria-hidden="true"></span></summary>
-          <div class="faq__body"><p data-i18n="pr.faq.2.a">The work and the report are exactly the same; only the delivery time changes. Standard: 5 business days. Express: 48 hours maximum. Flash: 24 hours maximum (not available for cookie consent and server-side tracking, whose fastest option is Express). The time starts once we have the access we need, and it is guaranteed: if we are late, you are refunded 50% of the price excl. VAT in Standard, 100% in Express or Flash. In Express and Flash, the clock is paused only during an urgent blocking issue reported by your expert (see below). Packs have a single price and their delivery time is set after the order. Multi-domain requests have no fixed option: the expert estimates the time in your quote.</p></div>
+          <div class="faq__body"><p data-i18n="pr.faq.2.a">The work and the report are exactly the same; only the delivery time changes. Standard: 7 business days. Express: 48 hours maximum. Flash: 24 hours maximum (not available for cookie consent and server-side tracking, whose fastest option is Express). The time starts once we have the access we need, and it is guaranteed: if we are late, you are refunded 50% of the price excl. VAT in Standard, 100% in Express or Flash. In Express and Flash, the clock is paused only during an urgent blocking issue reported by your expert (see below). Packs have a single price and their delivery time is set after the order. Multi-domain requests have no fixed option: the expert estimates the time in your quote.</p></div>
         </details>
         <details class="faq__item">
           <summary><span data-i18n="pr.faq.8.q">What happens if you miss the delivery time?</span><span class="faq__icon" aria-hidden="true"></span></summary>
@@ -329,7 +331,7 @@
       <div class="footer__col">
         <h3 class="footer__heading" data-i18n="nav.resources">Resources</h3>
         <ul class="footer__menu footer__menu--tight">
-          <li><a href="#" data-i18n="nav.blog">Blog</a></li>
+          <li><a href="/journal" data-i18n="nav.blog">Blog</a></li>
           <li><a href="/#faq" data-i18n="nav.help">Help center</a></li>
           <li><a href="#" data-tally="contact" data-i18n="nav.check">Free check</a></li>
           <li><a href="/pricing#pricing-faq" data-i18n="ft.faq">Pricing FAQ</a></li>
@@ -341,9 +343,9 @@
         <ul class="footer__menu footer__menu--tight">
           <li><a href="/#why" data-i18n="ft.aboutus">About us</a></li>
           <li><a href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a></li>
-          <li><a href="#" data-i18n="ft.legal">Legal notice</a></li>
-          <li><a href="#" data-i18n="ft.privacy">Privacy policy</a></li>
-          <li><a href="#" data-i18n="ft.terms">Terms of service</a></li>
+          <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.legal">Legal notice</a></li>
+          <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.privacy">Privacy policy</a></li>
+          <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.terms">Terms of service</a></li>
           <li><a href="#" data-tally="newsletter" data-i18n="nav.news">Newsletter</a></li>
         </ul>
         <div class="footer__social">
@@ -359,7 +361,7 @@
     <div class="container footer__bottom-inner">
       <div class="footer__legal">
         <a href="#" data-cookie-settings data-i18n="ft.cookies">Cookie settings</a>
-        <a href="#" data-i18n="ft.privacy">Privacy policy</a>
+        <a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.legalterms">Privacy &amp; terms</a>
         <a href="#" data-tally="contact" data-i18n="ft.abuse">Report abuse</a>
       </div>
       <p>© <span data-year>2026</span> Stanza</p>

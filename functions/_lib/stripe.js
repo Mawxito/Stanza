@@ -30,8 +30,22 @@ export async function getStripePrice(stripe, plan, tier) {
 
 // Checkout line for the amount set in the portal. The Stripe price is reused when it matches;
 // otherwise an inline price is created on the same Stripe product (same reporting, same tax setup).
-export async function lineItem(stripe, item, tier, amount) {
+// During a promotion (`promo`: { id, name, description }), the line names the promotion: a Stripe
+// product can't be renamed for one session, so the line gets its own product data, with the
+// offer in metadata.plan (reporting by offer) and the promotion in metadata.promo.
+export async function lineItem(stripe, item, tier, amount, promo = null) {
   const price = await getStripePrice(stripe, item.key, tier);
+  if (promo) {
+    return {
+      price_data: {
+        currency: 'eur',
+        unit_amount: amount,
+        tax_behavior: (price && price.tax) || 'exclusive',
+        product_data: { name: promo.name, description: promo.description, metadata: { plan: item.key, promo: promo.id } },
+      },
+      quantity: 1,
+    };
+  }
   if (price && price.amount === amount) return { price: price.id, quantity: 1 };
   let product = price && price.product;
   if (!product) {

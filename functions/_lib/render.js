@@ -1,7 +1,9 @@
 // Server-side HTML for the catalog slots (<div data-catalog="…">) of the pages.
 // Prices, availability and descriptions come from the live catalog (set in the portal,
 // see live-catalog.js), with catalog.js as the fallback; the checkout charges the same prices.
-import { CATALOG, BY_KEY, TIERS, separatePrice, effectiveTier } from './catalog.js';
+// Promotions set in the portal: the regular price is struck through next to the discounted one,
+// with a badge, and a banner with a countdown sits at the top of the pricing and home pages.
+import { CATALOG, BY_KEY, TIERS, separatePrice, effectiveTier, activePromo } from './catalog.js';
 
 const UI = {
   fr: {
@@ -24,6 +26,14 @@ const UI = {
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
     pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
+    regular: 'Prix habituel :',
+    until: (d) => `jusqu'au ${d}`,
+    banner: 'Promotion en cours',
+    onAll: 'sur tous nos services',
+    onServices: (names) => `sur ${names}`,
+    endsIn: 'Se termine dans',
+    units: { d: 'j', h: 'h', m: 'min', s: 's' },
+    seeOffers: 'Voir les offres',
   },
   en: {
     locale: 'en-IE',
@@ -45,6 +55,14 @@ const UI = {
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
     pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
+    regular: 'Regular price:',
+    until: (d) => `until ${d}`,
+    banner: 'Current promotion',
+    onAll: 'on all our services',
+    onServices: (names) => `on ${names}`,
+    endsIn: 'Ends in',
+    units: { d: 'd', h: 'h', m: 'm', s: 's' },
+    seeOffers: 'See the offers',
   },
 };
 
@@ -53,6 +71,39 @@ const icon = (id, size = 22) => `<svg width="${size}" height="${size}" aria-hidd
 
 export function formatPrice(cents, lang) {
   return new Intl.NumberFormat(UI[lang].locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
+}
+
+// "−20 %" / "−20%", or "−50 €" / "−€50".
+export function discountText(promo, lang) {
+  if (promo.percent) return lang === 'fr' ? `−${promo.percent}\u202f%` : `−${promo.percent}%`;
+  if (promo.amount_cents) return `−${formatPrice(promo.amount_cents, lang)}`;
+  return '';
+}
+
+// "31 January" (the year only when it isn't this one), in Paris time.
+export function formatDay(iso, lang) {
+  const d = new Date(iso);
+  const opts = { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' };
+  if (d.getUTCFullYear() !== new Date().getUTCFullYear()) opts.year = 'numeric';
+  return new Intl.DateTimeFormat(UI[lang].locale, opts).format(d);
+}
+
+export const promoUntil = (promo, lang) => (promo.ends_at ? UI[lang].until(formatDay(promo.ends_at, lang)) : '');
+
+const SPARKLE = '<svg class="promo-spark" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><circle cx="19" cy="19" r="1.6"/></svg>';
+
+function promoLine(promo, lang) {
+  const until = promoUntil(promo, lang);
+  return `<p class="offer__promo"><span class="promo-badge">${SPARKLE}<span>${esc(promo.label[lang])}</span>`
+    + `${discountText(promo, lang) ? `<b>${discountText(promo, lang)}</b>` : ''}</span>`
+    + (until ? `<small>${esc(until)}</small>` : '')
+    + '</p>';
+}
+
+function amountLine(item, tier, amount, promo, lang) {
+  const ui = UI[lang];
+  const regular = promo ? `<s class="offer__regular"><i class="u-sr">${ui.regular} </i>${formatPrice(item.regular[tier], lang)}</s>` : '';
+  return `<p class="offer__amount">${regular}<span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`;
 }
 
 export function productName(key, lang) {
@@ -78,14 +129,17 @@ function priceBlock(item, shownTier, lang, byKey) {
   if (amount == null) {
     return `<div class="offer__price"${tierAttr(item, tier)}><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p></div>`;
   }
+  // Packs compare effective prices with effective prices: what the client would really pay.
   const ref = separatePrice(item, tier, byKey);
+  const promo = activePromo(item, tier);
   const compare = ref && ref > amount
     ? `<p class="offer__compare">${ui.compare(formatPrice(ref, lang), formatPrice(ref - amount, lang))}</p>`
     : '';
   // Packs: no fixed delivery time and no late-delivery refund, the time is set after the order.
   if (item.group === 'packs') {
     return `<div class="offer__price"${tierAttr(item, tier)}>`
-      + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
+      + amountLine(item, tier, amount, promo, lang)
+      + (promo ? promoLine(promo, lang) : '')
       + compare
       + `<p class="offer__delay">${icon('i-clock', 16)}${ui.packDelay}</p>`
       + '</div>';
@@ -93,7 +147,8 @@ function priceBlock(item, shownTier, lang, byKey) {
   const delay = tier === 'standard' ? ui.delay.standard(item.days) : ui.delay[tier];
   return `<div class="offer__price"${tierAttr(item, shownTier)}>`
     + (tier !== shownTier ? unavailableNote(item, shownTier, tier, lang) : '')
-    + `<p class="offer__amount"><span>${formatPrice(amount, lang)}</span><small>${ui.vat}</small></p>`
+    + amountLine(item, tier, amount, promo, lang)
+    + (promo ? promoLine(promo, lang) : '')
     + compare
     + `<p class="offer__delay">${icon('i-clock', 16)}${delay}</p>`
     + `<p class="offer__guarantee">${icon('i-shield-check', 16)}${ui.guarantee[tier]}</p>`
@@ -153,7 +208,7 @@ function offerCard(item, lang, byKey) {
 
 // Home page: one card per service: the problem as a question, the solution,
 // an animated emblem, and a link down to the section that details it.
-const MOTIFS = {
+export const MOTIFS = {
   consent: '<svg viewBox="0 0 120 80" class="sv sv--consent"><g class="sv-cookie"><circle cx="40" cy="40" r="21"/><circle class="sv-chip" cx="33" cy="33" r="2.6"/><circle class="sv-chip" cx="46" cy="36" r="2.2"/><circle class="sv-chip" cx="37" cy="48" r="2.4"/><circle class="sv-chip" cx="49" cy="47" r="1.8"/></g><g class="sv-lock"><rect x="50" y="49" width="16" height="13" rx="3"/><path class="sv-shackle" d="M53.5 49v-4a4.5 4.5 0 0 1 9 0v4"/></g><rect class="sv-track" x="76" y="31" width="30" height="18" rx="9"/><circle class="sv-knob" cx="85" cy="40" r="6.5"/></svg>',
   accessibility: '<svg viewBox="0 0 120 80" class="sv sv--a11y"><rect class="sv-page" x="30" y="10" width="60" height="60" rx="7"/><rect class="sv-line" x="38" y="20" width="30" height="4" rx="2"/><rect class="sv-line" x="38" y="32" width="44" height="4" rx="2"/><rect class="sv-line" x="38" y="44" width="38" height="4" rx="2"/><rect class="sv-line" x="38" y="56" width="26" height="4" rx="2"/><circle class="sv-ok sv-ok--1" cx="86" cy="22" r="4"/><circle class="sv-ok sv-ok--2" cx="86" cy="34" r="4"/><circle class="sv-ok sv-ok--3" cx="86" cy="46" r="4"/><g class="sv-lens"><circle cx="0" cy="0" r="11"/><path d="m8 8 9 9"/></g></svg>',
   inbox: '<svg viewBox="0 0 120 80" class="sv sv--inbox"><path class="sv-tray" d="M30 48h16l5 8h18l5-8h16v18a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4z"/><g class="sv-mail"><rect x="44" y="8" width="32" height="22" rx="3"/><path d="m44 10 16 11 16-11"/></g><circle class="sv-badge" cx="88" cy="46" r="7"/><path class="sv-tick" d="m84.5 46 2.5 2.5 4.5-5"/></svg>',
@@ -175,9 +230,37 @@ function serviceCard(item, lang) {
     + '</span></a>';
 }
 
+// Promotions running now: one banner each (usually one), with a live countdown (main.js).
+function countdownParts(ms) {
+  const t = Math.max(0, Math.floor(ms / 1000));
+  return { d: Math.floor(t / 86400), h: Math.floor((t % 86400) / 3600), m: Math.floor((t % 3600) / 60), s: t % 60 };
+}
+
+export function promoBanner(cat, lang, href, now = Date.now()) {
+  const ui = UI[lang];
+  const list = (cat.promotions || []).filter((p) => Date.parse(p.ends_at) > now).slice(0, 2);
+  return list.map((p) => {
+    const names = p.scope === 'services'
+      ? new Intl.ListFormat(UI[lang].locale, { type: 'conjunction' }).format(p.services.map((k) => productName(k, lang)).filter(Boolean))
+      : '';
+    const parts = countdownParts(Date.parse(p.ends_at) - now);
+    const unit = (k, v) => `<span class="cd__u"${k === 'd' && !v ? ' hidden' : ''}><b data-cd="${k}">${k === 'd' ? v : String(v).padStart(2, '0')}</b><small>${ui.units[k]}</small></span>`;
+    return `<aside class="promo-bar" aria-label="${ui.banner}" data-promo-bar>`
+      + '<span class="promo-bar__shine" aria-hidden="true"></span>'
+      + '<div class="container promo-bar__inner">'
+      + `<span class="promo-bar__icon" aria-hidden="true">${SPARKLE}</span>`
+      + `<p class="promo-bar__text"><b>${esc(p.label[lang])}</b><span>${esc(names ? ui.onServices(names) : ui.onAll)}</span>`
+      + `<small>${esc(promoUntil(p, lang))}</small></p>`
+      + `<p class="promo-bar__count" role="timer" data-countdown="${p.ends_at}"><span class="promo-bar__ends">${ui.endsIn}</span>`
+      + `<span class="cd">${unit('d', parts.d)}${unit('h', parts.h)}${unit('m', parts.m)}${unit('s', parts.s)}</span></p>`
+      + `<a class="promo-bar__cta" href="${href}">${ui.seeOffers} <span aria-hidden="true">→</span></a>`
+      + '</div></aside>';
+  }).join('');
+}
+
 // Offers switched off in the portal are not shown (nor sold: see api/checkout.js).
 const shown = (cat, group) => cat.list.filter((p) => p.group === group && p.active !== false);
-const STATIC = { list: CATALOG, byKey: BY_KEY };
+const STATIC = { list: CATALOG, byKey: BY_KEY, promotions: [] };
 
 const SLOTS = {
   packs: (lang, cat) => shown(cat, 'packs').map((p) => offerCard(p, lang, cat.byKey)).join(''),
@@ -186,6 +269,8 @@ const SLOTS = {
   multi: (lang, cat) => shown(cat, 'multi').map((p) => offerCard(p, lang, cat.byKey)).join(''),
   'overview-compliance': (lang, cat) => shown(cat, 'compliance').map((p) => serviceCard(p, lang)).join(''),
   'overview-revenue': (lang, cat) => shown(cat, 'revenue').map((p) => serviceCard(p, lang)).join(''),
+  'promo-home': (lang, cat) => promoBanner(cat, lang, '/pricing#offers'),
+  'promo-pricing': (lang, cat) => promoBanner(cat, lang, '#offers'),
 };
 
 export function renderSlot(name, lang, cat = STATIC) {

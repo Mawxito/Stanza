@@ -7,7 +7,7 @@ Site marketing de **Stanza**, en français et en anglais. Cinq services techniqu
 - **Packs** : Conformité, Revenue, Complet (les 5)
 - **Multi-domaines** : sur devis ; le client indique le nombre de domaines, l'expert répond avec un devis et une estimation du délai
 
-Chaque service à l'unité existe en délai **Standard** (5 jours ouvrés), **Express** (48 h) ou **Flash** (24 h). Les **packs** n'ont qu'un prix (celui du Standard), sans délai fixe ni remboursement : leur délai est établi après la commande. Les délais sont **garantis** (services à l'unité) : en cas de retard, le client est remboursé de 50 % du prix HT en Standard et de 100 % du prix HT en Express ou Flash (délai compté à partir de la réception des accès ; les devis multi-domaines ne sont pas concernés). En capture manuelle, il suffit de capturer la moitié du montant (Standard) ou d'annuler l'autorisation (Express/Flash) ; si le paiement est déjà capturé, faites un remboursement depuis le Dashboard Stripe.
+Chaque service à l'unité existe en délai **Standard** (7 jours ouvrés), **Express** (48 h) ou **Flash** (24 h). Les **packs** n'ont qu'un prix (celui du Standard), sans délai fixe ni remboursement : leur délai est établi après la commande. Les délais sont **garantis** (services à l'unité) : en cas de retard, le client est remboursé de 50 % du prix HT en Standard et de 100 % du prix HT en Express ou Flash (délai compté à partir de la réception des accès ; les devis multi-domaines ne sont pas concernés). En capture manuelle, il suffit de capturer la moitié du montant (Standard) ou d'annuler l'autorisation (Express/Flash) ; si le paiement est déjà capturé, faites un remboursement depuis le Dashboard Stripe.
 
 Le site est en HTML / CSS / JS vanilla, hébergé sur **Cloudflare Pages**. Un middleware Pages choisit la langue et insère les fiches produits ; les paiements passent par **Stripe Checkout**, les formulaires par **Tally**.
 
@@ -18,13 +18,19 @@ public/                       Site publié par Cloudflare Pages (textes en angla
   index.html                  Accueil : description des services, sans aucun prix
   pricing.html                Page Tarifs (/pricing) : packs, services, délais, FAQ
   success.html                Retour après paiement
+  journal.html                Gabarit du journal (/journal et /journal/<slug>, remplis par functions/journal/)
+  assets/js/journal.js        Filtres du journal sans rechargement, animations, barre de lecture
   assets/js/auth.js           Comportement de ces deux pages
   _routes.json                Le middleware ne tourne pas sur /assets/*
   assets/js/config.js         ← IDs des formulaires Tally
 functions/_middleware.js      Langue + traduction FR + fiches produits, côté serveur
 functions/_lib/catalog.js     ← LES PRODUITS : textes FR/EN, prix, délais (source unique)
 functions/_lib/strings-fr.js  ← Traductions françaises des textes des pages
-functions/_lib/render.js      HTML des fiches produits (page Tarifs et accueil)
+functions/_lib/render.js      HTML des fiches produits (page Tarifs et accueil), promotions
+functions/_lib/blog.js        Articles du journal (PORTAL_URL/api/blog, 1 min de cache ; blog-seed.js en secours)
+functions/_lib/journal.js     Pages du journal : liste filtrée, article, 404
+functions/_lib/markdown.js    Rendu Markdown sûr des articles (tout le HTML est échappé)
+functions/journal/            Routes /journal et /journal/<slug>
 functions/_lib/i18n.js        Choix de la langue (pays, cookie, ?lang=)
 functions/api/checkout.js     POST /api/checkout → crée la Checkout Session Stripe
 functions/api/stripe-webhook.js  POST /api/stripe-webhook → traitement des commandes
@@ -81,6 +87,12 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 1
 
 **Catalogue piloté depuis le portail** : prix, description et disponibilité de chaque offre (Admin → Services & modèles) sont lus sur `PORTAL_URL/api/catalog`, gardés une minute, et utilisés pour l'affichage comme pour le paiement. Prix vide = vitesse non proposée (le site affiche l'option la plus proche avec une note rouge) ; offre inactive = retirée du site et refusée au paiement. Si le portail ne répond pas, `functions/_lib/catalog.js` sert de secours.
 
+**Promotions** (Admin → Promotions du portail) : `/api/catalog` envoie alors, pour chaque offre, le prix effectif (déjà remisé) dans `prices`, le prix habituel dans `regular_prices` et la promotion dans `promo` ; la liste `promotions` donne les promotions en cours. Le site barre le prix habituel, affiche un badge (« Soldes d'hiver −20 % », « jusqu'au … ») et, en haut de l'accueil et de la page Tarifs, un bandeau animé avec compte à rebours. Le paiement débite le prix effectif : la ligne Stripe porte le nom de la promotion et `metadata.promo` (identifiant de la promotion) est ajouté à la session et au paiement. La comparaison « en services séparés » des packs compare toujours des prix effectifs entre eux. Un portail qui n'envoie pas ces champs reste compatible (aucune promotion).
+
+**Journal** (`/journal`) : les articles sont écrits et publiés dans le portail et lus sur `PORTAL_URL/api/blog` (une minute de cache). Sans portail, s'il ne répond pas ou s'il n'a encore aucun article publié, les trois articles de `functions/_lib/blog-seed.js` sont affichés. `GET /api/portal-status` indique la source des articles.
+
+**Pages légales** : le lien « Confidentialité et conditions » du footer (et les liens Mentions légales / Confidentialité / CGV) mène à `PORTAL_URL/legal?lang=<langue de la page>` (attribut `data-portal-href`, réécrit par le middleware).
+
 **Factures** : chaque paiement génère une facture Stripe (`invoice_creation`), listée dans le portail (Admin → Factures). Stripe facture ce service à part ; pour le couper, ajoutez la variable `STRIPE_INVOICES=off` dans Cloudflare Pages.
 
 **Conservation** : les données d'une commande sont supprimées 30 jours après sa clôture (ou plus tôt par l'admin) ; la page de succès et la FAQ tarifs le rappellent au client.
@@ -107,6 +119,8 @@ Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout comm
 
 **Tarifs** (`/pricing`) : hero · sélecteur de délai collant · services du pilier 1 · services du pilier 2 · multi-domaines sur devis (champ « nombre de domaines ») · packs · étapes de commande · FAQ tarifs · CTA. Chaque fiche a une ancre (`/pricing#consent`, `/pricing#pack-complete`…) utilisée par les liens de l'accueil.
 
+**Journal** (`/journal`) : hero avec illustration animée · filtres combinables (recherche, catégorie, mots-clés multiples, auteur et son rôle, langue, tri par date) reflétés dans l'URL (liens partageables, bouton Retour), compteur, filtres actifs retirables, réinitialisation, état vide · cartes animées à l'arrivée et à chaque filtrage. Par défaut, les articles dans la langue de la page passent en premier. **Article** (`/journal/<slug>`) : barre de progression de lecture, catégorie, mots-clés (liens vers la liste filtrée), auteur, date, temps de lecture, articles liés ; balises canonical, Open Graph et JSON-LD `BlogPosting` ; page 404 si l'article n'existe pas.
+
 ## Personnalisation
 
 - **Couleurs** : variables `--blue-*`, `--dark`, `--light` en haut de `stanza.css`.
@@ -116,7 +130,7 @@ Un hook git (`.githooks/pre-commit`, activé par `npm install`) bloque tout comm
 
 ## À valider avant mise en ligne
 
-- Pages légales (mentions légales, confidentialité, CGV) : les liens du footer pointent vers `#`.
+- Pages légales : hébergées par le portail (`/legal`) ; vérifiez qu'elle est en ligne avant la mise en production.
 - Les chiffres affichés dans les maquettes (100 % d'authentification, « 12 scripts bloqués »…) sont illustratifs : remplacez-les par des données réelles ou gardez-les clairement comme exemples.
 - Les logos de marques servent uniquement à indiquer la compatibilité ; ils restent la propriété de leurs détenteurs.
 - **TVA et particuliers** : le site affiche des prix HT et Stripe facture exactement ces montants (prix créés en `tax_behavior: exclusive`, sans taxe ajoutée). Si vous êtes assujetti à la TVA, il faut la collecter ; et la vente à des particuliers impose en France d'afficher des prix TTC. Validez ce point avec votre comptable. N'activez `automatic_tax` (Stripe Tax) qu'après avoir enregistré votre immatriculation TVA dans Stripe, sinon aucune taxe n'est collectée.

@@ -80,6 +80,14 @@ function translate(res, lang, url, env, catalog) {
         else el.removeAttribute('aria-current');
       },
     })
+    // Pages hosted by the portal (legal page): data-portal-href="/legal" → PORTAL_URL/legal?lang=…
+    .on('a[data-portal-href]', {
+      element: (el) => {
+        const path = el.getAttribute('data-portal-href');
+        if (/^\/[\w\-/]*$/.test(path)) el.setAttribute('href', `${portalOrigin(env)}${path}?lang=${lang}`);
+        el.removeAttribute('data-portal-href');
+      },
+    })
     // Links to the client area open it in the visitor's language.
     .on('a[href^="https://portail.stanzafix.com"]', {
       element: (el) => {
