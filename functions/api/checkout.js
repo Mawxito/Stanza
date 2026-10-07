@@ -21,8 +21,8 @@ const PACK_NOTE = {
   en: 'The delivery time will be set after your order. Your card is authorized now and charged only once the delivery is verified.',
 };
 const DELAY_NOTE = {
-  fr: (s, refund) => `Délai de livraison : ${s}, garanti (en cas de retard, ${refund} du prix HT remboursé). Votre carte est autorisée maintenant et débitée seulement après validation de la livraison.`,
-  en: (s, refund) => `Delivery time: ${s}, guaranteed (if we are late, ${refund} of the price excl. VAT is refunded). Your card is authorized now and charged only once the delivery is verified.`,
+  fr: (s, refund) => `Délai de livraison : ${s}, garanti (en cas de retard, ${refund} du prix HT remboursé ; délai suspendu seulement si un élément manque ou, en Express et Flash, pendant une urgence signalée par votre expert : voir la FAQ). Votre carte est autorisée maintenant et débitée seulement après validation de la livraison.`,
+  en: (s, refund) => `Delivery time: ${s}, guaranteed (if we are late, ${refund} of the price excl. VAT is refunded; the clock pauses only if an item is missing or, in Express and Flash, during an urgent issue reported by your expert: see the FAQ). Your card is authorized now and charged only once the delivery is verified.`,
 };
 // Late-delivery refund promised on the site: half in Standard, everything in Express / Flash.
 const LATE_REFUND = { standard: '50 %', express: '100 %', flash: '100 %' };
