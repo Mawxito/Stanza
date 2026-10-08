@@ -83,8 +83,10 @@ function translate(res, lang, url, env, catalog) {
     // Pages hosted by the portal (legal page): data-portal-href="/legal" → PORTAL_URL/legal?lang=…
     .on('a[data-portal-href]', {
       element: (el) => {
-        const path = el.getAttribute('data-portal-href');
-        if (/^\/[\w\-/]*$/.test(path)) el.setAttribute('href', `${portalOrigin(env)}${path}?lang=${lang}`);
+        const [path, hash] = el.getAttribute('data-portal-href').split('#');
+        if (/^\/[\w\-/]*$/.test(path) && (!hash || /^[\w-]+$/.test(hash))) {
+          el.setAttribute('href', `${portalOrigin(env)}${path}?lang=${lang}${hash ? `#${hash}` : ''}`);
+        }
         el.removeAttribute('data-portal-href');
       },
     })
@@ -93,6 +95,15 @@ function translate(res, lang, url, env, catalog) {
       element: (el) => {
         const href = el.getAttribute('href');
         if (!/[?&]lang=/.test(href)) el.setAttribute('href', `${href}${href.includes('?') ? '&' : '?'}lang=${lang}`);
+      },
+    })
+    // Legal notice: the publisher's identity comes from the LEGAL_* variables (same names as the portal).
+    .on('[data-legal]', {
+      element: (el) => {
+        const value = legalValue(env, el.getAttribute('data-legal'), lang);
+        el.setInnerContent(value);
+        if (el.tagName === 'a' && /^\S+@\S+$/.test(value)) el.setAttribute('href', `mailto:${value}`);
+        el.removeAttribute('data-legal');
       },
     })
     .on('[data-catalog]', { element: (el) => el.setInnerContent(renderSlot(el.getAttribute('data-catalog'), lang, catalog), { html: true }) })
@@ -118,4 +129,16 @@ function translate(res, lang, url, env, catalog) {
       });
   }
   return rewriter.transform(res);
+}
+
+const LEGAL_DEFAULTS = {
+  name: { en: 'Stanza', fr: 'Stanza' },
+  email: { en: 'contact@stanzafix.com', fr: 'contact@stanzafix.com' },
+  vat: { en: 'VAT not applicable, article 293 B of the French General Tax Code (CGI)', fr: 'TVA non applicable, art. 293 B du CGI' },
+};
+const LEGAL_FIELDS = ['name', 'status', 'siret', 'address', 'director', 'email', 'vat', 'mediator'];
+function legalValue(env, field, lang) {
+  if (!LEGAL_FIELDS.includes(field)) return '';
+  const value = String((env && env[`LEGAL_${field.toUpperCase()}`]) || '').trim();
+  return value || LEGAL_DEFAULTS[field]?.[lang] || (lang === 'fr' ? '[à compléter]' : '[to be completed]');
 }
