@@ -247,6 +247,36 @@ export const CATALOG = [
     },
   },
   {
+    // Atelier: any technical need outside the shop (site build, front-end, back-end, data,
+    // compliance work…). The client describes the need in a few words; Stanza scopes it,
+    // finds the expert or puts the team together, then sends a quote with the delivery date.
+    // Paid when the quote is accepted (the work starts at once). Nothing is sold here directly.
+    key: 'atelier', id: 'A1', group: 'multi', pillar: 'custom', icon: 'i-code-xml', quote: true, brief: true,
+    prices: { standard: null, express: null, flash: null },
+    fr: {
+      name: 'Atelier',
+      title: 'Atelier : votre projet technique sur mesure',
+      subtitle: 'Dites-nous simplement ce dont vous avez besoin, nous construisons l\'offre et trouvons l\'expert.',
+      short: 'Création ou refonte de site, front-end, back-end, données, conformité, intégrations : tout besoin technique qui n\'est pas dans la boutique.',
+      long: "Pas de cahier des charges à rédiger : décrivez votre besoin en quelques lignes. Nous l'étudions, définissons avec vous les prérequis nécessaires et constituons l'expert ou l'équipe la plus adaptée. Vous recevez ensuite un devis détaillé avec la date de remise la plus courte et la plus réaliste possible. Un interlocuteur reste disponible à chaque étape, avant comme pendant la réalisation, et vous suivez l'avancement dans votre espace client. Le devis se règle à son acceptation : l'expert est déjà trouvé, le travail démarre aussitôt.",
+      included: ["Étude de votre besoin et proposition d'offre", "Expert ou équipe constitués pour votre projet", 'Devis avec date de remise ferme', 'Suivi complet dans votre espace client', 'Un interlocuteur disponible à chaque étape'],
+      excluded: ['Licences, abonnements et hébergement des outils tiers', 'Maintenance après livraison (sauf si prévue au devis)'],
+      prereq: "Précisés dans le devis selon votre projet : accès, contenus, outils.",
+      cta: 'Décrire mon besoin',
+    },
+    en: {
+      name: 'Atelier',
+      title: 'Atelier: your custom technical project',
+      subtitle: 'Just tell us what you need, we build the offer and find the expert.',
+      short: 'Website build or redesign, front-end, back-end, data, compliance, integrations: any technical need that is not in the shop.',
+      long: 'No specification to write: describe your need in a few lines. We review it, agree with you on the prerequisites and put together the most suitable expert or team. You then receive a detailed quote with the shortest realistic delivery date. A contact person stays available at every step, before and during the work, and you follow progress in your client area. The quote is paid when you accept it: the expert is already found, so the work starts right away.',
+      included: ['Review of your need and offer proposal', 'Expert or team put together for your project', 'Quote with a firm delivery date', 'Full tracking in your client area', 'A contact person available at every step'],
+      excluded: ['Third-party licences, subscriptions and hosting', 'Maintenance after delivery (unless included in the quote)'],
+      prereq: 'Set out in the quote for your project: access, content, tools.',
+      cta: 'Describe my need',
+    },
+  },
+  {
     // On quote: the client gives the number of domains, the expert replies with
     // a quote and an estimated delivery time. Nothing is sold through Stripe.
     key: 'multi-domains', id: 'M1', group: 'multi', pillar: 'revenue', icon: 'i-mails', quote: true,

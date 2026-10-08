@@ -25,7 +25,13 @@ const UI = {
     packDelay: 'Délai de livraison établi après commande',
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
-    pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers' },
+    need: 'Votre besoin',
+    needPh: 'Ex. : refonte de notre site vitrine avec prise de rendez-vous, ou un tableau de bord qui regroupe nos ventes Shopify et nos campagnes.',
+    when: 'Échéance souhaitée',
+    whenOpts: [['asap', 'Le plus tôt possible'], ['2w', 'Sous 2 semaines'], ['1m', 'Sous un mois'], ['later', 'Pas d\'urgence']],
+    briefDelay: 'Date de remise fixée dans votre devis',
+    briefPay: "Réglé à l'acceptation du devis",
+    pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers', custom: 'Sur mesure' },
     regular: 'Prix habituel :',
     until: (d) => `jusqu'au ${d}`,
     banner: 'Promotion en cours',
@@ -54,7 +60,13 @@ const UI = {
     packDelay: 'Delivery time set after the order',
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
-    pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars' },
+    need: 'Your need',
+    needPh: 'E.g. a redesign of our website with online booking, or a dashboard combining our Shopify sales and our ad campaigns.',
+    when: 'Desired deadline',
+    whenOpts: [['asap', 'As soon as possible'], ['2w', 'Within 2 weeks'], ['1m', 'Within a month'], ['later', 'No rush']],
+    briefDelay: 'Delivery date set in your quote',
+    briefPay: 'Paid when you accept the quote',
+    pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars', custom: 'Custom' },
     regular: 'Regular price:',
     until: (d) => `until ${d}`,
     banner: 'Current promotion',
@@ -171,6 +183,17 @@ function ctaBlock(item, shownTier, lang) {
 // of domains; main.js opens the Tally "quote" form with it as a hidden field.
 function quoteBlocks(item, lang) {
   const ui = UI[lang];
+  // Atelier: a free description of the need, and the desired deadline.
+  if (item.brief) {
+    return `<div class="offer__price"><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p>`
+      + `<p class="offer__delay">${icon('i-clock', 16)}${esc(ui.briefDelay)}</p>`
+      + `<p class="offer__delay">${icon('i-wallet', 16)}${esc(ui.briefPay)}</p></div>`
+      + `<form class="offer__quote offer__quote--brief" data-quote="${item.key}" data-brief>`
+      + `<label class="offer__field offer__field--need"><span>${ui.need}</span>`
+      + `<textarea name="need" rows="4" minlength="10" maxlength="3000" required placeholder="${esc(ui.needPh)}"></textarea></label>`
+      + `<label class="offer__field"><span>${ui.when}</span><select name="when">${ui.whenOpts.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>`
+      + `<button class="btn btn--dark btn--block" type="submit">${esc(item[lang].cta)}</button></form>`;
+  }
   return `<div class="offer__price"><p class="offer__amount offer__amount--quote"><span>${ui.quote}</span></p>`
     + `<p class="offer__delay">${icon('i-clock', 16)}${esc(ui.quoteDelay)}</p></div>`
     + `<form class="offer__quote" data-quote="${item.key}">`

@@ -19,6 +19,7 @@
       note: 'Précisions (facultatif)', notePh: 'Domaines concernés, outils d’envoi, échéance…',
       sentFrom: 'Envoyé depuis votre compte ', sending: 'Envoi…',
       quoteMsg: function (n) { return 'Demande de devis multi-domaines : ' + n + ' domaines.'; },
+      briefMsg: function (when) { return 'Demande Atelier (sur mesure) — échéance souhaitée : ' + when + '.'; },
       sentTitle: 'Demande envoyée.', sentText: 'Votre devis arrivera dans vos messages du portail et par e-mail.',
       openPortal: 'Ouvrir le portail', sendError: 'L’envoi n’a pas abouti. Réessayez dans un instant ou contactez-nous.'
     }
@@ -28,6 +29,7 @@
       note: 'Details (optional)', notePh: 'Domains concerned, sending tools, deadline…',
       sentFrom: 'Sent from your account ', sending: 'Sending…',
       quoteMsg: function (n) { return 'Multi-domain quote request: ' + n + ' domains.'; },
+      briefMsg: function (when) { return 'Atelier request (custom project) — desired deadline: ' + when + '.'; },
       sentTitle: 'Request sent.', sentText: 'Your quote will arrive in your portal messages and by email.',
       openPortal: 'Open the portal', sendError: 'Your request could not be sent. Please try again in a moment or contact us.'
     };
@@ -200,10 +202,33 @@
     if (text) n.textContent = text;
     return n;
   }
+  // Champs cachés transmis au formulaire Tally « quote » (visiteur non connecté).
+  function quoteFields(form) {
+    var f = { offer: form.getAttribute('data-quote'), lang: doc.lang };
+    var d = form.querySelector('[name="domains"]');
+    var need = form.querySelector('[name="need"]');
+    var when = form.querySelector('[name="when"]');
+    if (d) f.domains = d.value;
+    if (need) f.need = need.value.trim().slice(0, 600);
+    if (when) f.deadline = when.value;
+    return f;
+  }
   function enhanceQuote(form, s) {
     if (form.hasAttribute('data-account')) return;
     form.setAttribute('data-account', '');
     var btn = form.querySelector('button');
+    if (form.hasAttribute('data-brief')) {
+      var who0 = el('p', 'offer__account');
+      who0.innerHTML = userIcon;
+      who0.appendChild(document.createTextNode(T.sentFrom));
+      who0.appendChild(el('b', '', s.name));
+      var err0 = el('p', 'offer__error');
+      err0.setAttribute('role', 'alert');
+      err0.hidden = true;
+      form.insertBefore(who0, btn);
+      form.appendChild(err0);
+      return;
+    }
     var field = el('label', 'offer__field offer__field--note');
     field.appendChild(el('span', '', T.note));
     var area = document.createElement('textarea');
@@ -231,9 +256,12 @@
   function sendQuote(form) {
     var btn = form.querySelector('button[type="submit"], button');
     var error = form.querySelector('.offer__error');
-    var domains = parseInt(form.querySelector('[name="domains"]').value, 10);
-    var note = (form.querySelector('[name="note"]') || {}).value || '';
-    var message = T.quoteMsg(domains) + (note.trim() ? '\n\n' + note.trim() : '');
+    var brief = form.hasAttribute('data-brief');
+    var whenSel = form.querySelector('[name="when"]');
+    var when = whenSel ? whenSel.options[whenSel.selectedIndex].text : '';
+    var domains = brief ? null : parseInt(form.querySelector('[name="domains"]').value, 10);
+    var note = (form.querySelector(brief ? '[name="need"]' : '[name="note"]') || {}).value || '';
+    var message = (brief ? T.briefMsg(when) : T.quoteMsg(domains)) + (note.trim() ? '\n\n' + note.trim() : '');
     var label = btn.textContent;
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
@@ -247,7 +275,9 @@
       body: JSON.stringify({
         kind: 'quote',
         message: message.slice(0, 5000),
-        payload: { domains: domains, offer: form.getAttribute('data-quote') || 'multi-domains', page: location.pathname, lang: doc.lang }
+        payload: brief
+          ? { offer: 'atelier', deadline: whenSel ? whenSel.value : 'asap', page: location.pathname, lang: doc.lang }
+          : { domains: domains, offer: form.getAttribute('data-quote') || 'multi-domains', page: location.pathname, lang: doc.lang }
       })
     }).then(function (r) {
       if (r.status === 401) {
@@ -255,7 +285,7 @@
         done();
         writeCache(null);
         leaveAccountMode(form);
-        openTally('quote', { domains: domains, offer: form.getAttribute('data-quote'), lang: doc.lang });
+        openTally('quote', quoteFields(form));
         return;
       }
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -286,8 +316,7 @@
       e.preventDefault();
       if (!form.reportValidity()) return;
       if (form.hasAttribute('data-account')) { sendQuote(form); return; }
-      var input = form.querySelector('[name="domains"]');
-      openTally('quote', { domains: input.value, offer: form.getAttribute('data-quote'), lang: doc.lang });
+      openTally('quote', quoteFields(form));
     });
   });
   if ($('[data-quote]')) {
@@ -865,5 +894,41 @@
       });
     });
     sync();
+  })();
+
+  /* ---------- Tarifs : deux vues (offres à prix fixe / sur devis) ---------- */
+  (function () {
+    var nav = $('[data-pr-tabs]');
+    if (!nav) return;
+    var QUOTE = ['#sur-devis', '#multi-domains', '#atelier', '#multi'];
+    var show = function (view, scroll) {
+      document.documentElement.setAttribute('data-pr-view', view);
+      $$('[data-view]', nav).forEach(function (a) {
+        var on = a.getAttribute('data-view') === view;
+        a.classList.toggle('is-on', on);
+        if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+      });
+      if (scroll) nav.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    };
+    var fromHash = function () {
+      var h = location.hash;
+      if (QUOTE.indexOf(h) !== -1) return 'quote';
+      return 'offers';
+    };
+    show(fromHash(), false);
+    $$('[data-view]', nav).forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var view = a.getAttribute('data-view');
+        show(view, true);
+        try { history.replaceState(null, '', view === 'quote' ? '#sur-devis' : '#offres'); } catch (err) { /* ignoré */ }
+      });
+    });
+    window.addEventListener('hashchange', function () {
+      var view = fromHash();
+      show(view, false);
+      var target = location.hash && document.getElementById(location.hash.slice(1));
+      if (target) setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 30);
+    });
   })();
 })();
