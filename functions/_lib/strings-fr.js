@@ -1011,5 +1011,6 @@ export const FR = {
   'rs.spec.promise.3': `<b>Le client est cadré.</b> Prérequis réunis, attentes claires, et Stanza comme interlocuteur unique.`,
   'rs.spec.promise.4': `<b>Le paiement est sécurisé dès le premier jour.</b> Le paiement du client est garanti par Stripe avant le début du travail : vous ne relancez jamais une facture.`,
   'rs.spec.promise.end': `Vous vous concentrez à 100 % sur la production technique, sans aucune prospection ni gestion commerciale.`,
+  'rs.spec.terms': `Les règles complètes : <a href="https://portail.stanzafix.com/legal/specialistes" data-portal-href="/legal/specialistes">conditions des spécialistes et contrat de sous-traitance</a>, à accepter avant votre première mission.`,
   // ---------- End of resource pages ----------
 };

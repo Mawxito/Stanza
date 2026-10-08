@@ -15,23 +15,27 @@
   var T = FR
     ? {
       redirect: 'Redirection vers le paiement…', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', slide: 'Diapositive ',
-      portal: 'Portail', account: 'Ouvrir votre espace client, connecté en tant que ',
+      portal: 'Portail', account: 'Menu du compte, connecté en tant que ',
       note: 'Précisions (facultatif)', notePh: 'Domaines concernés, outils d’envoi, échéance…',
       sentFrom: 'Envoyé depuis votre compte ', sending: 'Envoi…',
       quoteMsg: function (n) { return 'Demande de devis multi-domaines : ' + n + ' domaines.'; },
       briefMsg: function (when) { return 'Demande Atelier (sur mesure) — échéance souhaitée : ' + when + '.'; },
       sentTitle: 'Demande envoyée.', sentText: 'Votre devis arrivera dans vos messages du portail et par e-mail.',
-      openPortal: 'Ouvrir le portail', sendError: 'L’envoi n’a pas abouti. Réessayez dans un instant ou contactez-nous.'
+      openPortal: 'Ouvrir le portail', sendError: 'L’envoi n’a pas abouti. Réessayez dans un instant ou contactez-nous.',
+      menuHome: 'Mon espace', menuAccount: 'Compte et sécurité', logout: 'Se déconnecter', loggingOut: 'Déconnexion…',
+      logoutError: 'La déconnexion n’a pas abouti. Réessayez.', signedAs: 'Connecté en tant que'
     }
     : {
       redirect: 'Redirecting to checkout…', openMenu: 'Open menu', closeMenu: 'Close menu', slide: 'Slide ',
-      portal: 'Portal', account: 'Open your client area, signed in as ',
+      portal: 'Portal', account: 'Account menu, signed in as ',
       note: 'Details (optional)', notePh: 'Domains concerned, sending tools, deadline…',
       sentFrom: 'Sent from your account ', sending: 'Sending…',
       quoteMsg: function (n) { return 'Multi-domain quote request: ' + n + ' domains.'; },
       briefMsg: function (when) { return 'Atelier request (custom project) — desired deadline: ' + when + '.'; },
       sentTitle: 'Request sent.', sentText: 'Your quote will arrive in your portal messages and by email.',
-      openPortal: 'Open the portal', sendError: 'Your request could not be sent. Please try again in a moment or contact us.'
+      openPortal: 'Open the portal', sendError: 'Your request could not be sent. Please try again in a moment or contact us.',
+      menuHome: 'My client area', menuAccount: 'Account & security', logout: 'Sign out', loggingOut: 'Signing out…',
+      logoutError: 'Signing out failed. Please try again.', signedAs: 'Signed in as'
     };
 
   /* ------------------------------------------------------------------
@@ -400,24 +404,113 @@
     a.removeAttribute('data-session-orig');
     a.removeAttribute('data-signed-in');
     a.removeAttribute('aria-label');
+    a.removeAttribute('aria-haspopup');
+    a.removeAttribute('aria-expanded');
+    a._session = null;
     a.style.minWidth = '';
   }
   function portalHome(s) {
     try { if (s.portal_url && new URL(s.portal_url).origin === PORTAL) return withLang(s.portal_url.replace(/\/$/, '') + '/'); } catch (e) { /* ignore */ }
     return withLang(PORTAL + '/');
   }
+  /* Menu du nom (connecté) : espace client, compte, déconnexion. */
+  var acctMenu = null;
+  var acctOwner = null;
+  function closeAcctMenu() {
+    if (!acctMenu) return;
+    var m = acctMenu;
+    acctMenu = null;
+    if (acctOwner) { acctOwner.setAttribute('aria-expanded', 'false'); acctOwner = null; }
+    m.classList.add('is-closing');
+    setTimeout(function () { if (m.parentNode) m.parentNode.removeChild(m); }, reduceMotion ? 0 : 160);
+  }
+  function openAcctMenu(a, s) {
+    closeAcctMenu();
+    var m = document.createElement('div');
+    m.className = 'acct-menu';
+    m.setAttribute('role', 'menu');
+    m.innerHTML = '<p class="acct-menu__who"><span></span><b></b></p>'
+      + '<a class="acct-menu__item" role="menuitem" data-k="home"></a>'
+      + '<a class="acct-menu__item" role="menuitem" data-k="account"></a>'
+      + '<button type="button" class="acct-menu__item acct-menu__item--out" role="menuitem"></button>'
+      + '<p class="acct-menu__error" role="alert" hidden></p>';
+    $('.acct-menu__who span', m).textContent = T.signedAs;
+    $('.acct-menu__who b', m).textContent = s.name;
+    var home = $('[data-k="home"]', m);
+    home.href = portalHome(s);
+    home.innerHTML = userIcon;
+    home.appendChild(document.createTextNode(T.menuHome));
+    var account = $('[data-k="account"]', m);
+    account.href = withLang(PORTAL + '/compte');
+    account.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/></svg>';
+    account.appendChild(document.createTextNode(T.menuAccount));
+    var out = $('.acct-menu__item--out', m);
+    out.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
+    out.appendChild(document.createTextNode(T.logout));
+    out.addEventListener('click', function () {
+      out.disabled = true;
+      out.lastChild.textContent = T.loggingOut;
+      fetch(PORTAL + '/api/session', { method: 'DELETE', credentials: 'include' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          writeCache(null);
+          location.reload();
+        })
+        .catch(function () {
+          out.disabled = false;
+          out.lastChild.textContent = T.logout;
+          var err = $('.acct-menu__error', m);
+          err.textContent = T.logoutError;
+          err.hidden = false;
+        });
+    });
+    document.body.appendChild(m);
+    var r = a.getBoundingClientRect();
+    var w = m.offsetWidth;
+    m.style.top = Math.round(r.bottom + 10) + 'px';
+    m.style.left = Math.round(Math.max(12, Math.min(window.innerWidth - w - 12, r.right - w))) + 'px';
+    acctMenu = m;
+    acctOwner = a;
+    a.setAttribute('aria-expanded', 'true');
+    home.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', function (e) {
+    if (acctMenu && !acctMenu.contains(e.target) && !(acctOwner && acctOwner.contains(e.target))) closeAcctMenu();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && acctMenu) { var o = acctOwner; closeAcctMenu(); if (o) o.focus(); }
+  });
+  window.addEventListener('resize', closeAcctMenu);
+  window.addEventListener('scroll', function () { if (acctMenu) closeAcctMenu(); }, { passive: true });
+
   function applySession(s, animate) {
     var home = portalHome(s);
     loginLinks.forEach(function (a) {
+      if (!a.hasAttribute('data-menu-bound')) {
+        a.setAttribute('data-menu-bound', '');
+        a.addEventListener('click', function (e) {
+          if (!a.hasAttribute('data-signed-in') || !a._session) return;
+          e.preventDefault();
+          if (acctMenu && acctOwner === a) closeAcctMenu(); else openAcctMenu(a, a._session);
+        });
+      }
+      a._session = s;
       swapLink(a, function () {
         a.setAttribute('href', home);
         a.setAttribute('data-signed-in', '');
+        a.setAttribute('aria-haspopup', 'menu');
+        a.setAttribute('aria-expanded', 'false');
         a.setAttribute('aria-label', T.account + s.name);
         a.innerHTML = userIcon;
         var name = document.createElement('span');
         name.className = 'session-name';
         name.textContent = s.name;
         a.appendChild(name);
+        var chev = document.createElement('span');
+        chev.className = 'session-chev';
+        chev.setAttribute('aria-hidden', 'true');
+        chev.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+        a.appendChild(chev);
       }, animate);
     });
     signupLinks.forEach(function (a) {
@@ -676,7 +769,7 @@
     });
   });
   $$('.dropdown a, .nav > .nav__list > .nav__item > a.nav__link, .nav__mobile-actions a').forEach(function (a) {
-    a.addEventListener('click', function () { if (!a.hasAttribute('data-form')) closeMenus(); });
+    a.addEventListener('click', function () { if (!a.hasAttribute('data-form') && !a.hasAttribute('data-signed-in')) closeMenus(); });
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenus(); });
   document.addEventListener('click', function (e) { if (desktopMq.matches && !e.target.closest('[data-dropdown]')) dropItems.forEach(function (o) { setOpen(o, false); }); });

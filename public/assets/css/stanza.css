@@ -2567,3 +2567,28 @@ html[data-theme="dark"] .at-examples li:last-child { background: transparent; bo
 .sf__account .session-icon { color: var(--blue-600); flex: none; }
 .sf__done-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 html[data-theme="dark"] .sf__account { background: rgba(124,180,255,.1); color: var(--light); }
+
+/* Menu du nom (connecté) : espace client, compte, déconnexion */
+.session-chev { display: inline-grid; place-items: center; opacity: .7; transition: transform .25s var(--ease-out); }
+[data-session="login"][aria-expanded="true"] .session-chev { transform: rotate(180deg); }
+.acct-menu { position: fixed; z-index: 1000; width: 248px; padding: 8px; border-radius: 16px; background: #fff; color: var(--dark);
+  box-shadow: 0 0 0 1px rgba(31,36,48,.08), 0 24px 48px -16px rgba(18,48,110,.35); transform-origin: top right; animation: acctIn .22s var(--ease-out) both; }
+.acct-menu.is-closing { animation: acctOut .16s ease-in both; }
+.acct-menu__who { display: grid; gap: 2px; padding: 8px 10px 10px; margin-bottom: 4px; border-bottom: 1px solid var(--grey-2); font-size: 12px; color: var(--muted-light); }
+.acct-menu__who b { font-size: 14px; font-weight: 500; color: var(--dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-menu__item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 14px; color: inherit; text-align: left; cursor: pointer; transition: background .15s; }
+.acct-menu__item:hover, .acct-menu__item:focus-visible { background: var(--blue-50); outline: none; }
+.acct-menu__item svg { flex: none; color: var(--blue-600); }
+.acct-menu__item--out { margin-top: 4px; border-top: 1px solid var(--grey-2); border-radius: 0 0 10px 10px; color: #b42318; }
+.acct-menu__item--out svg { color: #b42318; }
+.acct-menu__item--out:hover { background: #fdecea; }
+.acct-menu__item:disabled { opacity: .6; cursor: default; }
+.acct-menu__error { margin: 6px 10px 4px; font-size: 12.5px; color: #b42318; }
+@keyframes acctIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes acctOut { to { opacity: 0; transform: translateY(-4px) scale(.98); } }
+html[data-theme="dark"] .acct-menu { background: #171b24; color: var(--light); box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 24px 48px -16px rgba(0,0,0,.6); }
+html[data-theme="dark"] .acct-menu__who, html[data-theme="dark"] .acct-menu__item--out { border-color: rgba(255,255,255,.08); }
+html[data-theme="dark"] .acct-menu__who b { color: var(--light); }
+html[data-theme="dark"] .acct-menu__item:hover { background: rgba(124,180,255,.1); }
+html[data-theme="dark"] .acct-menu__item--out:hover { background: rgba(240,122,106,.12); }
+@media (prefers-reduced-motion: reduce) { .acct-menu, .acct-menu.is-closing { animation: none; } }
