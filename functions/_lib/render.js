@@ -172,7 +172,7 @@ function ctaBlock(item, shownTier, lang) {
   const tier = effectiveTier(item, shownTier);
   const btn = item.featured ? 'btn--light' : 'btn--dark';
   if (item.prices[tier] == null) {
-    return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-tally="contact">${UI[lang].quoteCta}</a></div>`;
+    return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-form="contact">${UI[lang].quoteCta}</a></div>`;
   }
   return `<form class="offer__cta"${tierAttr(item, shownTier)} method="post" action="/api/checkout" data-checkout>`
     + `<input type="hidden" name="plan" value="${item.key}"><input type="hidden" name="speed" value="${tier}"><input type="hidden" name="lang" value="${lang}">`
@@ -180,7 +180,7 @@ function ctaBlock(item, shownTier, lang) {
 }
 
 // On-quote offer: same for every delivery speed. The client enters the number
-// of domains; main.js opens the Tally "quote" form with it as a hidden field.
+// of domains; signed out, main.js opens the Stanza "quote" form prefilled with it.
 function quoteBlocks(item, lang) {
   const ui = UI[lang];
   // Atelier: a free description of the need, and the desired deadline.

@@ -4,7 +4,7 @@
 
   var doc = document.documentElement;
   doc.classList.add('js');
-  var CFG = window.STANZA_CONFIG || { tally: {}, stripe: {} };
+  var CFG = window.STANZA_CONFIG || { stripe: {} };
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (sel, ctx) { return (ctx || document).querySelector(sel); };
   var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
@@ -35,42 +35,252 @@
     };
 
   /* ------------------------------------------------------------------
-   * Tally + Stripe wiring
+   * Stanza forms (no third party): a modal built from the definitions below.
+   * Answers go to /api/forms (Pages Function), then to the portal (Admin → Formulaires).
+   * Any element with data-form="contact|quote|specialist|consentCheck|newsletter" opens one.
    * ------------------------------------------------------------------ */
-  var tallyLoaded = false;
-  function loadTally() {
-    if (tallyLoaded) return;
-    tallyLoaded = true;
-    var s = document.createElement('script');
-    s.src = 'https://tally.so/widgets/embed.js';
-    s.async = true;
-    document.head.appendChild(s);
-  }
-  // hidden: values for the form's hidden fields, e.g. { domains: 10 }
-  function openTally(key, hidden) {
-    var id = CFG.tally && CFG.tally[key];
-    if (!isSet(id)) id = CFG.tally && CFG.tally.contact;
-    if (!isSet(id)) {
-      console.warn('[Stanza] Tally form "' + key + '" is not configured in assets/js/config.js');
-      location.href = '/pricing';
-      return;
+  var L = function (fr, en) { return FR ? fr : en; };
+  var CH = function (pairs) { return pairs.map(function (p) { return { v: p[0], l: L(p[1], p[2]) }; }); };
+  var F = {
+    name: { k: 'name', t: 'text', l: L('Nom et prénom', 'Full name'), req: true, ac: 'name' },
+    email: { k: 'email', t: 'email', l: L('E-mail', 'Email'), req: true, ac: 'email' },
+    company: { k: 'company', t: 'text', l: L('Entreprise', 'Company'), ac: 'organization', opt: true },
+    message: function (label, ph, req) { return { k: 'message', t: 'long', l: label, ph: ph, req: req, opt: !req, full: true }; }
+  };
+  var FORMS = {
+    contact: {
+      eyebrow: L('Contact', 'Contact'), title: L('Écrivez-nous', 'Write to us'),
+      lead: L('Une vraie personne vous répond sous un jour ouvré.', 'A real person replies within one business day.'),
+      fields: [F.name, F.email, F.company,
+        { k: 'topic', t: 'select', l: L('Sujet', 'Topic'), o: CH([['question', 'Une question', 'A question'], ['project', 'Un projet ou un devis', 'A project or a quote'], ['security', 'Sécurité ou signalement', 'Security or a report'], ['other', 'Autre', 'Other']]) },
+        F.message(L('Votre message', 'Your message'), L('Dites-nous ce dont vous avez besoin.', 'Tell us what you need.'), true)],
+      done: L('Merci, c’est bien reçu. Nous vous répondons sous un jour ouvré.', 'Thank you, we have it. We will reply within one business day.')
+    },
+    quote: {
+      eyebrow: L('Sur devis', 'On quote'), title: L('Votre demande de devis', 'Your quote request'),
+      lead: L('Un expert étudie votre demande et vous répond avec un devis et une date de remise.', 'An expert reviews your request and replies with a quote and a delivery date.'),
+      fields: [F.name, F.email, F.company,
+        { k: 'domains', t: 'number', l: L('Nombre de domaines', 'Number of domains'), when: 'multi-domains', min: 2, max: 999 },
+        { k: 'need', t: 'long', l: L('Votre besoin', 'Your need'), when: 'atelier', req: true, full: true, ph: L('Quelques lignes avec vos mots suffisent.', 'A few lines in your own words are enough.') },
+        { k: 'deadline', t: 'select', l: L('Échéance souhaitée', 'Desired deadline'), when: 'atelier', o: CH([['asap', 'Le plus tôt possible', 'As soon as possible'], ['2w', 'Sous 2 semaines', 'Within 2 weeks'], ['1m', 'Sous un mois', 'Within a month'], ['later', 'Pas d’urgence', 'No rush']]) },
+        F.message(L('Précisions', 'Details'), L('Outils, contraintes, échéance…', 'Tools, constraints, deadline…'), false),
+        { k: 'offer', t: 'hidden' }],
+      done: L('Demande reçue. Votre devis arrive par e-mail, avec la date de remise.', 'Request received. Your quote will arrive by email, with the delivery date.')
+    },
+    specialist: {
+      eyebrow: L('Devenir spécialiste', 'Become a specialist'), title: L('Candidater au réseau Stanza', 'Apply to the Stanza network'),
+      lead: L('Cinq minutes pour vous présenter. Un seul domaine suffit, et toute autre expertise est la bienvenue.', 'Five minutes to introduce yourself. One area is enough, and any other expertise is welcome.'),
+      fields: [F.name, F.email,
+        { k: 'phone', t: 'tel', l: L('Téléphone', 'Phone'), ac: 'tel', opt: true },
+        { k: 'city', t: 'text', l: L('Ville ou pays', 'City or country'), opt: true },
+        { k: 'areas', t: 'chips', l: L('Vos domaines d’expertise', 'Your areas of expertise'), req: true, full: true, o: CH([
+          ['deliverability', 'Délivrabilité e-mail', 'Email deliverability'], ['consent', 'Consentement cookies', 'Cookie consent'], ['tracking', 'Suivi côté serveur', 'Server-side tracking'],
+          ['accessibility', 'Accessibilité', 'Accessibility'], ['automation', 'Automatisation', 'Automation'], ['web', 'Développement web', 'Web development'],
+          ['data', 'Données et reporting', 'Data and reporting'], ['other', 'Autre', 'Other']]) },
+        { k: 'other', t: 'text', l: L('Autre expertise (précisez)', 'Other expertise (specify)'), full: true, opt: true, ph: L('Ex. : migrations Shopify, API Stripe, RGPD des applications…', 'E.g. Shopify migrations, Stripe APIs, GDPR for apps…') },
+        { k: 'experience', t: 'select', l: L('Expérience dans ce domaine', 'Experience in this area'), req: true, o: CH([['', 'Choisir…', 'Choose…'], ['0-2', 'Moins de 2 ans', 'Under 2 years'], ['2-5', '2 à 5 ans', '2 to 5 years'], ['5-10', '5 à 10 ans', '5 to 10 years'], ['10+', 'Plus de 10 ans', 'Over 10 years']]) },
+        { k: 'time', t: 'select', l: L('Temps disponible par semaine', 'Time available per week'), req: true, o: CH([['', 'Choisir…', 'Choose…'], ['<5', 'Moins de 5 h', 'Under 5 h'], ['5-10', '5 à 10 h', '5 to 10 h'], ['10-20', '10 à 20 h', '10 to 20 h'], ['20+', 'Plus de 20 h', 'Over 20 h']]) },
+        { k: 'links', t: 'long', l: L('Liens (portfolio, LinkedIn, GitHub…)', 'Links (portfolio, LinkedIn, GitHub…)'), full: true, opt: true, rows: 2 },
+        F.message(L('Parlez-nous de vous', 'Tell us about yourself'), L('Votre parcours, et une mission dont vous êtes fier.', 'Your background, and a project you are proud of.'), true),
+        { k: 'consent', t: 'check', l: L('J’accepte que Stanza conserve ces informations pour étudier ma candidature.', 'I agree that Stanza keeps this information to review my application.'), req: true, full: true }],
+      done: L('Candidature reçue, merci ! Nous l’étudions et revenons vers vous si votre profil correspond à nos besoins du moment.', 'Application received, thank you! We will review it and get back to you if your profile matches our current needs.')
+    },
+    consentCheck: {
+      eyebrow: L('Constat gratuit', 'Free check'), title: L('Votre constat cookies gratuit', 'Your free cookie check'),
+      lead: L('Un spécialiste visite vos pages clés et vous envoie un verdict clair sous un jour.', 'A specialist visits your key pages and sends you a clear verdict within a day.'),
+      fields: [F.name, F.email, F.company,
+        { k: 'site', t: 'url', l: L('Adresse du site', 'Website address'), req: true, ph: 'https://', full: true },
+        { k: 'cmp', t: 'select', l: L('Plateforme de consentement', 'Consent platform'), o: CH([['unknown', 'Je ne sais pas', 'I don’t know'], ['none', 'Aucune', 'None'], ['axeptio', 'Axeptio', 'Axeptio'], ['cookiebot', 'Cookiebot', 'Cookiebot'], ['didomi', 'Didomi', 'Didomi'], ['other', 'Autre', 'Other']]) },
+        { k: 'pages', t: 'long', l: L('Pages à vérifier en priorité', 'Pages to check first'), full: true, opt: true, rows: 2, ph: L('Une adresse par ligne (5 au maximum).', 'One address per line (5 at most).') },
+        F.message(L('Précisions', 'Details'), '', false)],
+      done: L('C’est noté. Votre verdict arrive par e-mail sous un jour ouvré.', 'Noted. Your verdict will arrive by email within one business day.')
+    },
+    newsletter: {
+      eyebrow: L('Newsletter', 'Newsletter'), title: L('Recevoir la newsletter', 'Get the newsletter'),
+      lead: L('Les changements qui comptent en délivrabilité, consentement et accessibilité, sans bruit.', 'The changes that matter in deliverability, consent and accessibility, without the noise.'),
+      fields: [F.email, { k: 'name', t: 'text', l: L('Prénom', 'First name'), opt: true, ac: 'given-name' },
+        { k: 'topics', t: 'chips', l: L('Sujets', 'Topics'), full: true, o: CH([['deliverability', 'Délivrabilité', 'Deliverability'], ['consent', 'Consentement', 'Consent'], ['accessibility', 'Accessibilité', 'Accessibility'], ['tracking', 'Suivi et données', 'Tracking and data']]) },
+        { k: 'consent', t: 'check', l: L('J’accepte de recevoir la newsletter Stanza. Désinscription en un clic.', 'I agree to receive the Stanza newsletter. Unsubscribe in one click.'), req: true, full: true }],
+      done: L('Inscription enregistrée. À très vite dans votre boîte de réception.', 'You are subscribed. See you soon in your inbox.')
     }
-    if (window.Tally && typeof window.Tally.openPopup === 'function') {
-      window.Tally.openPopup(id, { layout: 'modal', width: 640, overlay: true, emoji: { text: '👋', animation: 'wave' }, hiddenFields: hidden || {} });
-    } else {
-      var qs = hidden ? '?' + Object.keys(hidden).map(function (k) { return k + '=' + encodeURIComponent(hidden[k]); }).join('&') : '';
-      window.open('https://tally.so/r/' + id + qs, '_blank', 'noopener');
-    }
-  }
-  if (isSet(CFG.tally && CFG.tally.contact)) loadTally();
+  };
+  var FT = {
+    send: L('Envoyer', 'Send'), sending: L('Envoi…', 'Sending…'), close: L('Fermer', 'Close'), optional: L('facultatif', 'optional'),
+    privacy: L('Vos réponses servent uniquement à vous répondre.', 'Your answers are only used to reply to you.'),
+    error: L('L’envoi n’a pas abouti. Réessayez dans un instant.', 'Your message could not be sent. Please try again in a moment.'),
+    tooMany: L('Trop d’envois depuis cette connexion. Réessayez dans une heure.', 'Too many submissions from this connection. Please try again in an hour.'),
+    invalid: L('Vérifiez ce champ.', 'Please check this field.'), required: L('Champ obligatoire.', 'Required field.'), pick: L('Choisissez au moins une option.', 'Choose at least one option.'),
+    again: L('Fermer', 'Close')
+  };
 
-  $$('[data-tally]').forEach(function (el) {
-    var id = CFG.tally[el.getAttribute('data-tally')];
-    if (isSet(id)) el.setAttribute('href', 'https://tally.so/r/' + id);
+  var dialog = null;
+  function closeForm() {
+    if (!dialog) return;
+    var d = dialog;
+    d.classList.add('is-closing');
+    setTimeout(function () { if (d.open) d.close(); if (d.parentNode) d.parentNode.removeChild(d); }, reduceMotion ? 0 : 220);
+    dialog = null;
+  }
+  function field(def, values, i) {
+    var wrap = document.createElement(def.t === 'check' ? 'label' : def.t === 'chips' ? 'fieldset' : 'label');
+    wrap.className = 'sf__field sf__field--' + def.t + (def.full ? ' is-full' : '');
+    wrap.style.setProperty('--i', i);
+    var v = values[def.k] != null ? String(values[def.k]) : '';
+    if (def.t === 'check') {
+      wrap.innerHTML = '<input type="checkbox" name="' + def.k + '"' + (def.req ? ' required' : '') + '><span class="sf__box" aria-hidden="true"></span><span class="sf__checktext"></span>';
+      wrap.querySelector('.sf__checktext').textContent = def.l;
+      return wrap;
+    }
+    var label = document.createElement(def.t === 'chips' ? 'legend' : 'span');
+    label.className = 'sf__label';
+    label.textContent = def.l;
+    if (def.opt) { var o = document.createElement('small'); o.textContent = ' · ' + FT.optional; label.appendChild(o); }
+    wrap.appendChild(label);
+    var input;
+    if (def.t === 'chips') {
+      var box = document.createElement('div');
+      box.className = 'sf__chips';
+      def.o.forEach(function (opt) {
+        var c = document.createElement('label');
+        c.className = 'sf__chip';
+        c.innerHTML = '<input type="checkbox" name="' + def.k + '" value="' + opt.v + '"><span></span>';
+        c.querySelector('span').textContent = opt.l;
+        box.appendChild(c);
+      });
+      wrap.appendChild(box);
+      if (def.req) wrap.setAttribute('data-required', '');
+    } else if (def.t === 'select') {
+      input = document.createElement('select');
+      def.o.forEach(function (opt) { var o2 = document.createElement('option'); o2.value = opt.v; o2.textContent = opt.l; input.appendChild(o2); });
+      if (v) input.value = v;
+    } else if (def.t === 'long') {
+      input = document.createElement('textarea');
+      input.rows = def.rows || 4;
+      input.value = v;
+    } else {
+      input = document.createElement('input');
+      input.type = def.t === 'number' ? 'number' : def.t;
+      if (def.min) { input.min = def.min; input.max = def.max; input.inputMode = 'numeric'; }
+      input.value = v;
+    }
+    if (input) {
+      input.name = def.k;
+      if (def.req) input.required = true;
+      if (def.ph) input.placeholder = def.ph;
+      if (def.ac) input.autocomplete = def.ac;
+      wrap.appendChild(input);
+    }
+    var err = document.createElement('span');
+    err.className = 'sf__err';
+    err.setAttribute('aria-live', 'polite');
+    wrap.appendChild(err);
+    return wrap;
+  }
+  function openForm(key, values) {
+    var def = FORMS[key] || FORMS.contact;
+    key = FORMS[key] ? key : 'contact';
+    values = values || {};
+    closeMenus();
+    if (dialog) closeForm();
+    var started = Date.now();
+    var d = document.createElement('dialog');
+    d.className = 'sf';
+    d.setAttribute('aria-labelledby', 'sf-title');
+    d.innerHTML = '<form class="sf__card" novalidate><span class="sf__glow" aria-hidden="true"></span>'
+      + '<header class="sf__head"><p class="eyebrow eyebrow--light"></p><h2 class="sf__title" id="sf-title"></h2><p class="sf__lead"></p>'
+      + '<button type="button" class="sf__close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>'
+      + '<div class="sf__grid"></div><label class="sf__hp" aria-hidden="true">Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>'
+      + '<footer class="sf__foot"><p class="sf__privacy"></p><p class="sf__error" role="alert" hidden></p><button type="submit" class="btn btn--dark sf__send"></button></footer></form>';
+    $('.eyebrow', d).textContent = def.eyebrow;
+    $('.sf__title', d).textContent = def.title;
+    $('.sf__lead', d).textContent = def.lead;
+    $('.sf__close', d).setAttribute('aria-label', FT.close);
+    $('.sf__privacy', d).textContent = FT.privacy;
+    $('.sf__send', d).textContent = FT.send;
+    var grid = $('.sf__grid', d);
+    var offer = values.offer || '';
+    def.fields.forEach(function (fd, i) {
+      if (fd.when && fd.when !== offer) return;
+      if (fd.t === 'hidden') { var h = document.createElement('input'); h.type = 'hidden'; h.name = fd.k; h.value = values[fd.k] || ''; grid.appendChild(h); return; }
+      grid.appendChild(field(fd, values, i));
+    });
+    document.body.appendChild(d);
+    dialog = d;
+    d.showModal();
+    var first = $('input:not([type=hidden]):not([tabindex="-1"]), textarea, select', grid);
+    if (first) first.focus();
+    $('.sf__close', d).addEventListener('click', closeForm);
+    d.addEventListener('cancel', function (e) { e.preventDefault(); closeForm(); });
+    d.addEventListener('click', function (e) { if (e.target === d) closeForm(); });
+    var form = $('form', d);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = true;
+      $$('.sf__field', form).forEach(function (w) {
+        var err = $('.sf__err', w);
+        var input = $('input, textarea, select', w);
+        var msg = '';
+        if (w.hasAttribute('data-required') && !$('input:checked', w)) msg = FT.pick;
+        else if (input && !input.checkValidity()) msg = input.validity.valueMissing ? FT.required : FT.invalid;
+        w.classList.toggle('is-invalid', Boolean(msg));
+        if (err) err.textContent = msg;
+        if (msg && ok) { ok = false; (input || w).focus(); }
+      });
+      if (!ok) return;
+      var fields = {};
+      $$('input, textarea, select', grid).forEach(function (el) {
+        if (!el.name) return;
+        if (el.type === 'checkbox') {
+          if ($$('input[name="' + el.name + '"]', grid).length > 1) { fields[el.name] = fields[el.name] || []; if (el.checked) fields[el.name].push(el.value); }
+          else fields[el.name] = el.checked;
+        } else fields[el.name] = el.value;
+      });
+      var btn = $('.sf__send', form);
+      var errBox = $('.sf__error', form);
+      btn.disabled = true;
+      btn.textContent = FT.sending;
+      errBox.hidden = true;
+      fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form: key, fields: fields, hp: $('[name="website"]', form).value, started_at: started, page: location.pathname, lang: doc.lang })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (b) { return { r: r, b: b }; });
+      }).then(function (res) {
+        if (!res.r.ok) {
+          btn.disabled = false;
+          btn.textContent = FT.send;
+          if (res.b && res.b.field) {
+            var w = $('[name="' + res.b.field + '"]', form);
+            if (w) { var wr = w.closest('.sf__field'); wr.classList.add('is-invalid'); $('.sf__err', wr).textContent = FT.invalid; w.focus(); return; }
+          }
+          errBox.textContent = res.r.status === 429 ? FT.tooMany : FT.error;
+          errBox.hidden = false;
+          return;
+        }
+        var done = document.createElement('div');
+        done.className = 'sf__done';
+        done.setAttribute('role', 'status');
+        done.innerHTML = '<svg class="sf__tick" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="m15 27 7.5 7.5L38 19"/></svg><p></p><button type="button" class="btn btn--outline-dark"></button>';
+        $('p', done).textContent = def.done;
+        $('button', done).textContent = FT.again;
+        $('button', done).addEventListener('click', closeForm);
+        form.innerHTML = '';
+        form.appendChild(done);
+        $('button', done).focus();
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = FT.send;
+        errBox.textContent = FT.error;
+        errBox.hidden = false;
+      });
+    });
+  }
+
+  $$('[data-form]').forEach(function (el) {
     el.addEventListener('click', function (e) {
       e.preventDefault();
-      closeMenus();
-      openTally(el.getAttribute('data-tally'));
+      openForm(el.getAttribute('data-form'));
     });
   });
 
@@ -192,7 +402,7 @@
 
   /* ------------------------------------------------------------------
    * Quote requests (multi-domain).
-   * Signed out: the number of domains goes to the Tally "quote" form (unchanged).
+   * Signed out: the card opens the Stanza "quote" form, prefilled.
    * Signed in: the request goes straight to the portal, tied to the account
    * (POST /api/site-request); the quote then arrives in the portal messages.
    * ------------------------------------------------------------------ */
@@ -202,7 +412,7 @@
     if (text) n.textContent = text;
     return n;
   }
-  // Champs cachés transmis au formulaire Tally « quote » (visiteur non connecté).
+  // Valeurs reprises dans le formulaire « quote » (visiteur non connecté).
   function quoteFields(form) {
     var f = { offer: form.getAttribute('data-quote'), lang: doc.lang };
     var d = form.querySelector('[name="domains"]');
@@ -285,7 +495,7 @@
         done();
         writeCache(null);
         leaveAccountMode(form);
-        openTally('quote', quoteFields(form));
+        openForm('quote', quoteFields(form));
         return;
       }
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -316,13 +526,12 @@
       e.preventDefault();
       if (!form.reportValidity()) return;
       if (form.hasAttribute('data-account')) { sendQuote(form); return; }
-      openTally('quote', quoteFields(form));
+      openForm('quote', quoteFields(form));
     });
   });
   if ($('[data-quote]')) {
     session.then(function (s) { if (s) $$('[data-quote]').forEach(function (f) { enhanceQuote(f, s); }); });
   }
-  if (isSet(CFG.tally && CFG.tally.quote)) loadTally();
 
   // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).
   // Forms and prices are rendered server-side from functions/_lib/catalog.js.
@@ -396,7 +605,7 @@
     });
   });
   $$('.dropdown a, .nav > .nav__list > .nav__item > a.nav__link, .nav__mobile-actions a').forEach(function (a) {
-    a.addEventListener('click', function () { if (!a.hasAttribute('data-tally')) closeMenus(); });
+    a.addEventListener('click', function () { if (!a.hasAttribute('data-form')) closeMenus(); });
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenus(); });
   document.addEventListener('click', function (e) { if (desktopMq.matches && !e.target.closest('[data-dropdown]')) dropItems.forEach(function (o) { setOpen(o, false); }); });

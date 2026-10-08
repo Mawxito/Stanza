@@ -119,7 +119,7 @@
 
       <div class="nav__mobile-actions">
         <a class="btn btn--light btn--block" href="https://portail.stanzafix.com/signup" data-session="signup" data-i18n="nav.start">Get started</a>
-        <a class="btn btn--outline-light btn--block" href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a>
+        <a class="btn btn--outline-light btn--block" href="#" data-form="contact" data-i18n="nav.contact">Contact sales</a>
         <a class="text-btn" href="https://portail.stanzafix.com/login" data-session="login" data-i18n="nav.login">Log in</a>
       </div>
     </nav>
@@ -132,7 +132,7 @@
         <a class="lang__opt" href="?lang=fr" hreflang="fr" lang="fr" data-lang="fr" aria-label="Français">FR</a>
       </div>
       <a class="text-btn header__login" href="https://portail.stanzafix.com/login" data-session="login" data-i18n="nav.login">Log in</a>
-      <a class="btn btn--outline-light btn--sm header__contact" href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a>
+      <a class="btn btn--outline-light btn--sm header__contact" href="#" data-form="contact" data-i18n="nav.contact">Contact sales</a>
       <a class="btn btn--light btn--sm header__signup" href="https://portail.stanzafix.com/signup" data-session="signup" data-i18n="nav.start">Get started</a>
       <button class="burger" type="button" aria-label="Open menu" aria-expanded="false" data-burger>
         <span></span><span></span><span></span>
@@ -149,7 +149,7 @@
         <nav class="rs-crumbs" aria-label="Breadcrumb" data-i18n-attr="aria-label:rs.crumbs" data-intro><a href="/">Stanza</a><span aria-hidden="true">/</span><span data-i18n="nav.resources">Resources</span><span aria-hidden="true">/</span><span aria-current="page" data-i18n="nav.become">Become a specialist</span></nav>
         <h1 class="display display--md" data-split data-i18n="rs.spec.h1">Join the Stanza<br>specialist network.</h1>
         <p class="hero__lead" data-intro data-i18n="rs.spec.lead">Stanza is not hiring full-time. We work with experts who want to put their specialty to good use: clearly scoped missions, at your own pace, alongside your current activity, with the prerequisites already collected and no clients to find or payments to chase.</p>
-        <div class="rs-hero__actions" data-intro><a class="btn btn--light" href="#" data-tally="specialist"><span data-i18n="rs.spec.apply">Apply to join</span></a><a class="btn btn--outline-light" href="#process"><span data-i18n="rs.spec.processlink">How it works</span></a></div>
+        <div class="rs-hero__actions" data-intro><a class="btn btn--light" href="#" data-form="specialist"><span data-i18n="rs.spec.apply">Apply</span></a><a class="btn btn--outline-light" href="#process"><span data-i18n="rs.spec.processlink">How it works</span></a></div>
         
       </div>
       <div class="rs-art" aria-hidden="true">
@@ -228,11 +228,12 @@
           <li data-i18n="rs.spec.skills.4"><b>Accessibility:</b> WCAG and RGAA criteria, Lighthouse and axe, keyboard and checkout flow checks, clear fix plans.</li>
           <li data-i18n="rs.spec.skills.5"><b>Automation:</b> Make or Zapier, CRMs, webhooks, internal alerts on WhatsApp, email or Slack.</li>
         </ul>
-        <div class="rs-callout" data-reveal style="margin-top:28px"><span class="rs-icon"><svg class="mo mo--sparkles" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path class="mo-pop" d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path class="mo-pop mo-d1 mo-acc" d="m19 15 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/><path class="mo-pop mo-d2 mo-acc" d="m5 3 .6 1.6 1.6.6-1.6.6L5 7.4l-.6-1.6-1.6-.6 1.6-.6z"/></svg></span><div><p data-i18n="rs.spec.other">Your specialty is not on this list? <b>Apply anyway.</b> Tell us what you do best: if it fits what our clients need, we will most likely build an offer around it so you can practise it with Stanza.</p></div></div>
+        <div class="rs-callout" data-reveal style="margin-top:28px"><span class="rs-icon"><svg class="mo mo--sparkles" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path class="mo-pop" d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path class="mo-pop mo-d1 mo-acc" d="m19 15 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/><path class="mo-pop mo-d2 mo-acc" d="m5 3 .6 1.6 1.6.6-1.6.6L5 7.4l-.6-1.6-1.6-.6 1.6-.6z"/></svg></span><div><p data-i18n="rs.spec.other">Your specialty is not on this list? <b>Apply anyway.</b> Tell us what you do best: if it fits what our clients need, we will most likely build an offer around it so you can practise it with Stanza. <a href="#" data-form="specialist">Apply now</a></b> Tell us what you do best: if it fits what our clients need, we will most likely build an offer around it so you can practise it with Stanza.</p></div></div>
       </div>
     </div>
     </div>
   </section>
+  <section class="mega"><div class="container"><h2 class="mega__title" data-reveal data-i18n="mg.join">Join us</h2><p class="mega__lead" data-reveal data-i18n="mg.join.l">From your application to your first mission.</p></div></section>
   <section class="rs-section " id="process">
     <div class="container container--md">
       <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="rs.spec.proc.e">How it works</p><h2 class="h2" data-i18n="rs.spec.proc.t">From application to first mission</h2></div>
@@ -279,7 +280,7 @@
         </details>
         <details class="faq__item">
           <summary><span data-i18n="rs.spec.faq.5.q">My expertise is in another field. Can I apply?</span><span class="faq__icon" aria-hidden="true"></span></summary>
-          <div class="faq__body"><p data-i18n="rs.spec.faq.5.a">Yes. Describe it in the form. If it matches what our clients ask for, we will most likely create an offer that lets you practise it with Stanza.</p></div>
+          <div class="faq__body"><p data-i18n="rs.spec.faq.5.a">Yes. Describe it in the <a href="#" data-form="specialist">application form</a>. If it matches what our clients ask for, we will most likely create an offer that lets you practise it with Stanza.</p></div>
         </details>
         <details class="faq__item">
           <summary><span data-i18n="rs.spec.faq.1.q">Do I deal with clients directly?</span><span class="faq__icon" aria-hidden="true"></span></summary>
@@ -352,7 +353,7 @@
     <div class="cta__scrim" aria-hidden="true"></div>
     <div class="cta__content container">
       <h2 class="display display--md" data-reveal data-i18n="rs.spec.cta.t">Your expertise,<br>our clients.</h2>
-      <div class="cta__btns" data-reveal><a class="btn btn--light" href="#" data-tally="specialist"><span data-i18n="rs.spec.apply">Apply to join</span></a><a class="btn btn--outline-light" href="/contact"><span data-i18n="nav.contactus">Contact us</span></a></div>
+      <div class="cta__btns" data-reveal><a class="btn btn--light" href="#" data-form="specialist"><span data-i18n="rs.spec.apply">Apply</span></a><a class="btn btn--outline-light" href="/contact"><span data-i18n="nav.contactus">Contact us</span></a></div>
     </div>
   </section>
 </main>
@@ -432,7 +433,7 @@
       <div class="footer__legal">
         <a href="#" data-cookie-settings data-i18n="ft.cookies">Cookie settings</a>
         <a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.legalterms">Privacy &amp; terms</a>
-        <a href="#" data-tally="contact" data-i18n="ft.abuse">Report abuse</a>
+        <a href="#" data-form="contact" data-i18n="ft.abuse">Report abuse</a>
       </div>
       <p>© <span data-year>2026</span> Stanza</p>
     </div>
