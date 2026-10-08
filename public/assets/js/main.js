@@ -61,7 +61,7 @@
       lead: L('Un expert étudie votre demande et vous répond avec un devis et une date de remise.', 'An expert reviews your request and replies with a quote and a delivery date.'),
       fields: [F.name, F.email, F.company,
         { k: 'domains', t: 'number', l: L('Nombre de domaines', 'Number of domains'), when: 'multi-domains', min: 2, max: 999 },
-        { k: 'need', t: 'long', l: L('Votre besoin', 'Your need'), when: 'atelier', req: true, full: true, ph: L('Quelques lignes avec vos mots suffisent.', 'A few lines in your own words are enough.') },
+        { k: 'need', t: 'long', l: L('Votre besoin', 'Your need'), when: 'atelier', req: true, full: true, ph: L('Résumez votre projet. Le cahier des charges, obligatoire, se dépose ensuite dans votre espace client.', 'Sum up your project. The specification, which is required, is then uploaded in your client area.') },
         { k: 'deadline', t: 'select', l: L('Échéance souhaitée', 'Desired deadline'), when: 'atelier', o: CH([['asap', 'Le plus tôt possible', 'As soon as possible'], ['2w', 'Sous 2 semaines', 'Within 2 weeks'], ['1m', 'Sous un mois', 'Within a month'], ['later', 'Pas d’urgence', 'No rush']]) },
         F.message(L('Précisions', 'Details'), L('Outils, contraintes, échéance…', 'Tools, constraints, deadline…'), false),
         { k: 'offer', t: 'hidden' }],

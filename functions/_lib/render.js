@@ -16,7 +16,7 @@ const UI = {
     excluded: 'Non inclus',
     prereq: 'Prérequis',
     more: 'Détail et tarif',
-    solution: 'Voir la solution',
+    solution: 'Voir la solution', quoteMore: 'Demander un devis',
     delay: { standard: (d) => `${d} jours ouvrés`, express: '48 h maximum', flash: '24 h maximum' },
     quoteDelay: "Délai estimé par l'expert avec votre devis",
     speedName: { standard: (d) => `la Standard (${d} jours ouvrés)`, express: () => "l'Express (48 h maximum)", flash: () => 'la Flash (24 h maximum)' },
@@ -51,7 +51,7 @@ const UI = {
     excluded: 'Not included',
     prereq: 'Prerequisites',
     more: 'Details and pricing',
-    solution: 'See the solution',
+    solution: 'See the solution', quoteMore: 'Request a quote',
     delay: { standard: (d) => `${d} business days`, express: '48 hours max', flash: '24 hours max' },
     quoteDelay: 'Delivery time estimated by the expert with your quote',
     speedName: { standard: (d) => `Standard (${d} business days)`, express: () => 'Express (48 hours max)', flash: () => 'Flash (24 hours max)' },
@@ -236,7 +236,23 @@ export const MOTIFS = {
   accessibility: '<svg viewBox="0 0 120 80" class="sv sv--a11y"><rect class="sv-page" x="30" y="10" width="60" height="60" rx="7"/><rect class="sv-line" x="38" y="20" width="30" height="4" rx="2"/><rect class="sv-line" x="38" y="32" width="44" height="4" rx="2"/><rect class="sv-line" x="38" y="44" width="38" height="4" rx="2"/><rect class="sv-line" x="38" y="56" width="26" height="4" rx="2"/><circle class="sv-ok sv-ok--1" cx="86" cy="22" r="4"/><circle class="sv-ok sv-ok--2" cx="86" cy="34" r="4"/><circle class="sv-ok sv-ok--3" cx="86" cy="46" r="4"/><g class="sv-lens"><circle cx="0" cy="0" r="11"/><path d="m8 8 9 9"/></g></svg>',
   inbox: '<svg viewBox="0 0 120 80" class="sv sv--inbox"><path class="sv-tray" d="M30 48h16l5 8h18l5-8h16v18a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4z"/><g class="sv-mail"><rect x="44" y="8" width="32" height="22" rx="3"/><path d="m44 10 16 11 16-11"/></g><circle class="sv-badge" cx="88" cy="46" r="7"/><path class="sv-tick" d="m84.5 46 2.5 2.5 4.5-5"/></svg>',
   tracking: '<svg viewBox="0 0 120 80" class="sv sv--track"><path class="sv-wire" d="M24 40h72"/><circle class="sv-node" cx="20" cy="40" r="10"/><rect class="sv-node sv-node--mid" x="50" y="28" width="20" height="24" rx="4"/><circle class="sv-node" cx="100" cy="40" r="10"/><path class="sv-bars" d="M96 44v-3M100 44v-7M104 44v-5"/><circle class="sv-dot sv-dot--1" cx="24" cy="40" r="3"/><circle class="sv-dot sv-dot--2" cx="24" cy="40" r="3"/><circle class="sv-dot sv-dot--3" cx="24" cy="40" r="3"/></svg>',
+  atelier: '<svg viewBox="0 0 120 80" class="sv sv--atelier"><rect class="sv-page" x="26" y="12" width="68" height="52" rx="7"/><path class="sv-line" d="M26 24h68"/><path class="sv-code sv-code--l" d="m44 36-8 8 8 8"/><path class="sv-code sv-code--r" d="m76 36 8 8-8 8"/><rect class="sv-line sv-line--a" x="50" y="38" width="20" height="4" rx="2"/><rect class="sv-line sv-line--b" x="50" y="46" width="14" height="4" rx="2"/><circle class="sv-badge" cx="94" cy="62" r="7"/><path class="sv-tick" d="m90.5 62 2.5 2.5 4.5-5"/></svg>',
+  'multi-domains': '<svg viewBox="0 0 120 80" class="sv sv--multi"><g class="sv-mail sv-mail--1"><rect x="22" y="30" width="28" height="20" rx="3"/><path d="m22 32 14 10 14-10"/></g><g class="sv-mail sv-mail--2"><rect x="46" y="18" width="28" height="20" rx="3"/><path d="m46 20 14 10 14-10"/></g><g class="sv-mail sv-mail--3"><rect x="70" y="30" width="28" height="20" rx="3"/><path d="m70 32 14 10 14-10"/></g><circle class="sv-badge" cx="92" cy="58" r="7"/><path class="sv-tick" d="m88.5 58 2.5 2.5 4.5-5"/></svg>',
   leads: '<svg viewBox="0 0 120 80" class="sv sv--leads"><path class="sv-wave sv-wave--1" d="M38 26a26 26 0 0 0 0 28"/><path class="sv-wave sv-wave--2" d="M82 26a26 26 0 0 1 0 28"/><g class="sv-bell"><path d="M60 16c-9 0-15 7-15 16v8c0 4-2 7-5 9h40c-3-2-5-5-5-9v-8c0-9-6-16-15-16z"/><path d="M55 53a5 5 0 0 0 10 0"/></g><g class="sv-notif"><circle cx="74" cy="20" r="8"/><text x="74" y="23.5" text-anchor="middle">1</text></g></svg>',
+};
+
+// Sur mesure (accueil) : les deux offres sur devis, présentées comme les services.
+const CUSTOM_CARDS = {
+  atelier: {
+    href: '#atelier-home',
+    fr: { name: 'Atelier · sur devis', question: 'Un autre chantier technique à mener ?', answer: 'Sécurité, API, performance, automatisation, données, IA, MVP, infrastructure : chiffré sur devis à partir de votre cahier des charges.' },
+    en: { name: 'Atelier · on quote', question: 'Another technical project to deliver?', answer: 'Security, APIs, performance, automation, data, AI, MVPs, infrastructure: quoted from your specification.' },
+  },
+  'multi-domains': {
+    href: '/pricing#multi-domains',
+    fr: { name: 'Multi-domaines · sur devis', question: 'Plusieurs domaines à authentifier ?', answer: 'Inbox Protocol sur tous vos domaines d’envoi, à un tarif de volume, avec un rapport par domaine.' },
+    en: { name: 'Multi-domain · on quote', question: 'Several domains to authenticate?', answer: 'Inbox Protocol on all your sending domains, at a volume rate, with one report per domain.' },
+  },
 };
 
 function serviceCard(item, lang) {
@@ -250,6 +266,21 @@ function serviceCard(item, lang) {
     + `<h3 class="svc__title">${question}</h3>`
     + `<p class="svc__text">${esc(t.answer)}</p>`
     + `<span class="svc__more">${UI[lang].solution} <span aria-hidden="true">↓</span></span>`
+    + '</span></a>';
+}
+
+function customCard(key, lang) {
+  const c = CUSTOM_CARDS[key];
+  const t = c[lang];
+  const question = lang === 'fr' ? esc(t.question).replace(/ ([?!:;])/g, '&nbsp;$1') : esc(t.question);
+  return `<a class="svc svc--custom" href="${c.href}" data-glow>`
+    + '<span class="svc__glow" aria-hidden="true"></span>'
+    + `<span class="svc__visual" aria-hidden="true">${MOTIFS[key] || ''}</span>`
+    + '<span class="svc__body">'
+    + `<span class="svc__name">${esc(t.name)}</span>`
+    + `<h3 class="svc__title">${question}</h3>`
+    + `<p class="svc__text">${esc(t.answer)}</p>`
+    + `<span class="svc__more">${UI[lang].quoteMore} <span aria-hidden="true">→</span></span>`
     + '</span></a>';
 }
 
@@ -292,6 +323,8 @@ const SLOTS = {
   multi: (lang, cat) => shown(cat, 'multi').map((p) => offerCard(p, lang, cat.byKey)).join(''),
   'overview-compliance': (lang, cat) => shown(cat, 'compliance').map((p) => serviceCard(p, lang)).join(''),
   'overview-revenue': (lang, cat) => shown(cat, 'revenue').map((p) => serviceCard(p, lang)).join(''),
+  'overview-custom': (lang, cat) => shown(cat, 'multi').filter((p) => CUSTOM_CARDS[p.key])
+    .sort((a, b) => (a.key === 'atelier' ? -1 : b.key === 'atelier' ? 1 : 0)).map((p) => customCard(p.key, lang)).join(''),
   'promo-home': (lang, cat) => promoBanner(cat, lang, '/pricing#offers'),
   'promo-pricing': (lang, cat) => promoBanner(cat, lang, '#offers'),
 };
