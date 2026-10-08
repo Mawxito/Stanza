@@ -36,7 +36,8 @@
 
   /* ------------------------------------------------------------------
    * Stanza forms (no third party): a modal built from the definitions below.
-   * Answers go to /api/forms (Pages Function), then to the portal (Admin → Formulaires).
+   * Answers go to /api/forms (Pages Function), then to the portal (Admin → Formulaires, or Devis for quotes).
+ * A signed-in client's quote request goes straight from their account (POST /api/site-request).
    * Any element with data-form="contact|quote|specialist|consentCheck|newsletter" opens one.
    * ------------------------------------------------------------------ */
   var L = function (fr, en) { return FR ? fr : en; };
@@ -114,6 +115,8 @@
   };
 
   var dialog = null;
+  var accountSession = null;
+  var ACCOUNT_SKIP = { name: 1, email: 1, company: 1 };
   function closeForm() {
     if (!dialog) return;
     var d = dialog;
@@ -199,8 +202,23 @@
     $('.sf__send', d).textContent = FT.send;
     var grid = $('.sf__grid', d);
     var offer = values.offer || '';
+    // Connecté : nom, e-mail et entreprise viennent du compte.
+    var acct = key === 'quote' ? accountSession : null;
+    if (acct) {
+      var who = document.createElement('p');
+      who.className = 'sf__account';
+      who.innerHTML = userIcon;
+      who.appendChild(document.createTextNode(T.sentFrom));
+      var b = document.createElement('b');
+      b.textContent = acct.name;
+      who.appendChild(b);
+      grid.parentNode.insertBefore(who, grid);
+    }
     def.fields.forEach(function (fd, i) {
+      if (acct && ACCOUNT_SKIP[fd.k]) return;
       if (fd.when && fd.when !== offer) return;
+      // Demande sans offre précise : la description devient obligatoire.
+      if (fd.k === 'message' && key === 'quote' && !offer) fd = { k: fd.k, t: fd.t, l: fd.l, ph: fd.ph, req: true, full: true };
       if (fd.t === 'hidden') { var h = document.createElement('input'); h.type = 'hidden'; h.name = fd.k; h.value = values[fd.k] || ''; grid.appendChild(h); return; }
       grid.appendChild(field(fd, values, i));
     });
@@ -240,6 +258,7 @@
       btn.disabled = true;
       btn.textContent = FT.sending;
       errBox.hidden = true;
+      if (acct) { sendFromAccount(fields, form, btn, errBox, values); return; }
       fetch('/api/forms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -274,6 +293,56 @@
         errBox.textContent = FT.error;
         errBox.hidden = false;
       });
+    });
+  }
+
+  // Demande de devis d'un client connecté : envoyée au portail avec sa session (POST /api/site-request).
+  function sendFromAccount(fields, form, btn, errBox, values) {
+    var offer = fields.offer || '';
+    var whenSel = $('[name="deadline"]', form);
+    var head = offer === 'atelier' ? T.briefMsg(whenSel ? whenSel.options[whenSel.selectedIndex].text : '')
+      : offer === 'multi-domains' && fields.domains ? T.quoteMsg(fields.domains) : '';
+    var message = [head, (fields.need || '').trim(), (fields.message || '').trim()].filter(Boolean).join('\n\n') || L('Demande de devis', 'Quote request');
+    var payload = { page: location.pathname, lang: doc.lang };
+    if (offer) payload.offer = offer;
+    if (fields.domains) payload.domains = parseInt(fields.domains, 10) || null;
+    if (fields.deadline) payload.deadline = fields.deadline;
+    fetch(PORTAL + '/api/site-request', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'quote', message: message.slice(0, 5000), payload: payload })
+    }).then(function (r) {
+      if (r.status === 401) {
+        // Session expirée entre-temps : retour au formulaire habituel, réponses conservées.
+        accountSession = null;
+        writeCache(null);
+        closeForm();
+        var keep = {};
+        Object.keys(values || {}).forEach(function (k) { keep[k] = values[k]; });
+        Object.keys(fields).forEach(function (k) { keep[k] = fields[k]; });
+        setTimeout(function () { openForm('quote', keep); }, reduceMotion ? 0 : 240);
+        return;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var done = document.createElement('div');
+      done.className = 'sf__done';
+      done.setAttribute('role', 'status');
+      done.innerHTML = '<svg class="sf__tick" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="m15 27 7.5 7.5L38 19"/></svg><p></p><div class="sf__done-btns"><a class="btn btn--dark"></a><button type="button" class="btn btn--outline-dark"></button></div>';
+      $('p', done).textContent = T.sentTitle + ' ' + T.sentText;
+      var open = $('a', done);
+      open.href = accountSession ? portalHome(accountSession) : withLang(PORTAL + '/');
+      open.textContent = T.openPortal;
+      $('button', done).textContent = FT.again;
+      $('button', done).addEventListener('click', closeForm);
+      form.innerHTML = '';
+      form.appendChild(done);
+      open.focus();
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = FT.send;
+      errBox.textContent = T.sendError;
+      errBox.hidden = false;
     });
   }
 
@@ -399,6 +468,8 @@
       .catch(function () { clearTimeout(timer); resolve(null); });
   });
   window.STANZA_SESSION = session;
+  // Client connecté : ses demandes de devis partent de son compte, sans ressaisir ses coordonnées.
+  session.then(function (s) { accountSession = s && (!s.role || s.role === 'client') ? s : null; });
 
   /* ------------------------------------------------------------------
    * Quote requests (multi-domain).

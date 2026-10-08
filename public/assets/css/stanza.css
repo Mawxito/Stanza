@@ -2561,3 +2561,9 @@ html[data-theme="dark"] .rs-grid > .rs-card:not(.rs-card--dark) { box-shadow: no
 .at-examples li:last-child { background: transparent; box-shadow: none; color: var(--muted-light); padding-left: 4px; }
 html[data-theme="dark"] .at-examples li { color: var(--light); background: rgba(124,180,255,.1); box-shadow: inset 0 0 0 1px rgba(124,180,255,.2); }
 html[data-theme="dark"] .at-examples li:last-child { background: transparent; box-shadow: none; color: var(--muted-dark); }
+
+/* Formulaire de devis d'un client connecté : envoyé depuis son compte */
+.sf__account { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 10px 14px; border-radius: 12px; background: var(--blue-50); color: var(--dark); font-size: 14px; }
+.sf__account .session-icon { color: var(--blue-600); flex: none; }
+.sf__done-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+html[data-theme="dark"] .sf__account { background: rgba(124,180,255,.1); color: var(--light); }

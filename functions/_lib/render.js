@@ -26,11 +26,11 @@ const UI = {
     guarantee: { standard: 'Retard : 50 % remboursés (HT)', express: 'Retard : 100 % remboursé (HT)', flash: 'Retard : 100 % remboursé (HT)' },
     domains: 'Nombre de domaines',
     need: 'Votre besoin',
-    needPh: 'Ex. : refonte de notre site vitrine avec prise de rendez-vous, ou un tableau de bord qui regroupe nos ventes Shopify et nos campagnes.',
+    needPh: 'Ex. : sécuriser notre WordPress après un piratage, réparer la synchronisation Stripe vers notre CRM, ou un tableau de bord de nos ventes. Le cahier des charges se dépose ensuite dans votre espace client.',
     when: 'Échéance souhaitée',
     whenOpts: [['asap', 'Le plus tôt possible'], ['2w', 'Sous 2 semaines'], ['1m', 'Sous un mois'], ['later', 'Pas d\'urgence']],
     briefDelay: 'Date de remise fixée dans votre devis',
-    briefPay: "Réglé à l'acceptation du devis",
+    briefPay: "Débité à l'acceptation · cahier des charges obligatoire",
     pillar: { compliance: 'Pilier 1 : Conformité', revenue: 'Pilier 2 : Revenue & Data', both: 'Les deux piliers', custom: 'Sur mesure' },
     regular: 'Prix habituel :',
     until: (d) => `jusqu'au ${d}`,
@@ -61,11 +61,11 @@ const UI = {
     guarantee: { standard: 'Late: 50% refunded (excl. VAT)', express: 'Late: 100% refunded (excl. VAT)', flash: 'Late: 100% refunded (excl. VAT)' },
     domains: 'Number of domains',
     need: 'Your need',
-    needPh: 'E.g. a redesign of our website with online booking, or a dashboard combining our Shopify sales and our ad campaigns.',
+    needPh: 'E.g. clean up and secure our WordPress after a hack, fix the Stripe-to-CRM sync, or a dashboard of our sales. The specification is then uploaded in your client area.',
     when: 'Desired deadline',
     whenOpts: [['asap', 'As soon as possible'], ['2w', 'Within 2 weeks'], ['1m', 'Within a month'], ['later', 'No rush']],
     briefDelay: 'Delivery date set in your quote',
-    briefPay: 'Paid when you accept the quote',
+    briefPay: 'Charged on acceptance · specification required',
     pillar: { compliance: 'Pillar 1: Compliance', revenue: 'Pillar 2: Revenue & Data', both: 'Both pillars', custom: 'Custom' },
     regular: 'Regular price:',
     until: (d) => `until ${d}`,
@@ -172,7 +172,7 @@ function ctaBlock(item, shownTier, lang) {
   const tier = effectiveTier(item, shownTier);
   const btn = item.featured ? 'btn--light' : 'btn--dark';
   if (item.prices[tier] == null) {
-    return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-form="contact">${UI[lang].quoteCta}</a></div>`;
+    return `<div class="offer__cta"${tierAttr(item, tier)}><a class="btn ${item.featured ? 'btn--outline-light' : 'btn--outline-dark'} btn--block" href="#" data-form="quote">${UI[lang].quoteCta}</a></div>`;
   }
   return `<form class="offer__cta"${tierAttr(item, shownTier)} method="post" action="/api/checkout" data-checkout>`
     + `<input type="hidden" name="plan" value="${item.key}"><input type="hidden" name="speed" value="${tier}"><input type="hidden" name="lang" value="${lang}">`
