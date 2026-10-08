@@ -846,4 +846,24 @@
     }).observe(canvas);
   }
   $$('[data-stars]').forEach(starfield);
+
+  /* ---------- Mode nuit / clair : choix gardé dans le navigateur ---------- */
+  (function () {
+    var root = document.documentElement;
+    var sync = function () {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      $$('[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-pressed', dark ? 'true' : 'false'); });
+    };
+    $$('[data-theme-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var dark = root.getAttribute('data-theme') !== 'dark';
+        root.classList.add('theme-switching');
+        if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+        try { localStorage.setItem('stz-theme', dark ? 'dark' : 'light'); } catch (e) { /* stockage indisponible */ }
+        sync();
+        setTimeout(function () { root.classList.remove('theme-switching'); }, 450);
+      });
+    });
+    sync();
+  })();
 })();

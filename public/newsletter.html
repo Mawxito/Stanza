@@ -15,6 +15,7 @@
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/newsreader-opsz.woff2" as="font" type="font/woff2" crossorigin>
+  <script>/* Thème avant l'affichage, sans flash : choix enregistré, sinon clair. */try{if(localStorage.getItem('stz-theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
   <link rel="stylesheet" href="/assets/css/stanza.css">
 </head>
 <body>
@@ -81,7 +82,7 @@
                 <p class="dropdown__title"><svg width="14" height="14"><use href="#i-life-buoy"/></svg><span data-i18n="nav.support">Support</span></p>
                 <ul>
                   <li><a class="dropdown__link" href="/help"><span data-i18n="nav.help">Help center</span><small data-i18n="nav.help.s">Find quick answers</small></a></li>
-                  <li><a class="dropdown__link" href="/free-check"><span data-i18n="nav.check">Free check</span><small data-i18n="nav.check.s">Your email domain, checked for free</small></a></li>
+                  <li><a class="dropdown__link" href="/free-check"><span data-i18n="nav.check">Free check</span><small data-i18n="nav.check.s">Your cookie banner, checked for free</small></a></li>
                   <li><a class="dropdown__link" href="/contact"><span data-i18n="nav.contactus">Contact us</span><small data-i18n="nav.contactus.s">Speak to our team</small></a></li>
                   <li><a class="dropdown__link" href="/guarantees"><span data-i18n="nav.guar">Guarantees &amp; delivery times</span><small data-i18n="nav.guar.s">On time, or refunded</small></a></li>
                 </ul>
@@ -123,6 +124,7 @@
     </nav>
 
     <div class="header__actions">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Dark mode" data-i18n-attr="aria-label:a11y.theme;title:a11y.theme" title="Dark mode"><svg class="theme-toggle__sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="theme-toggle__moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
       <div class="lang" role="group" aria-label="Language" data-i18n-attr="aria-label:a11y.lang">
         <svg class="lang__icon" width="16" height="16" aria-hidden="true"><use href="#i-globe"/></svg>
         <a class="lang__opt" href="?lang=en" hreflang="en" lang="en" data-lang="en" aria-label="English">EN</a>
@@ -172,37 +174,37 @@
       <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="rs.news.in.e">In each issue</p><h2 class="h2" data-i18n="rs.news.in.t">What you will receive</h2><p class="body-lg" data-i18n="rs.news.in.l">Written by the people who do the work, for those who have to decide.</p></div>
       <div class="rs-grid rs-grid--3" data-reveal>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-mail-check"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--mail-check" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/><circle class="mo-pop mo-acc" cx="18" cy="18" r="4.2"/><path class="mo-draw mo-acc" d="m16.2 18 1.3 1.3 2.4-2.6"/></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.1.t">Deliverability</p>
         <p class="rs-card__text" data-i18n="rs.news.in.1">New requirements from Gmail, Yahoo and Microsoft, DMARC and BIMI in practice, and what to check on your domain.</p>
         
       </article>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-cookie"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--cookie" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><g class="mo-roll"><path d="M20.5 12.8A8.5 8.5 0 1 1 11.2 3.5a3 3 0 0 0 4 3.7 3 3 0 0 0 5.3 5.6z"/><circle class="mo-f mo-acc mo-blink" cx="8.5" cy="10" r="1"/><circle class="mo-f mo-blink mo-d1" cx="12" cy="15" r="1"/><circle class="mo-f mo-acc mo-blink mo-d2" cx="15.5" cy="12.8" r=".9"/><circle class="mo-f mo-blink mo-d3" cx="8" cy="15.5" r=".8"/></g></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.2.t">Consent</p>
         <p class="rs-card__text" data-i18n="rs.news.in.2">CNIL decisions and recommendations, Consent Mode updates, and changes to consent platforms.</p>
         
       </article>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-scan-search"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--scan-search" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path class="mo-scan mo-acc" d="M6 12h12"/></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.3.t">Accessibility</p>
         <p class="rs-card__text" data-i18n="rs.news.in.3">The European Accessibility Act in practice, RGAA updates, and the most common blocking issues we find.</p>
         
       </article>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-server"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--server" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/><circle class="mo-f mo-acc mo-blink" cx="7.5" cy="7" r="1"/><circle class="mo-f mo-acc mo-blink mo-d1" cx="7.5" cy="17" r="1"/><path d="M11 7h6M11 17h6"/></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.4.t">Tracking</p>
         <p class="rs-card__text" data-i18n="rs.news.in.4">Browser restrictions, server-side tracking and conversion APIs, always within the limits of consent.</p>
         
       </article>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-zap"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--zap" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path class="mo-flash mo-acc" d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.5.t">Automation</p>
         <p class="rs-card__text" data-i18n="rs.news.in.5">Simple ways to answer leads faster with your CRM, Make or Zapier.</p>
         
       </article>
       <article class="rs-card">
-        <span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-newspaper"/></svg></span>
+        <span class="rs-icon"><svg class="mo mo--newspaper" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><rect class="mo-acc" x="6" y="7" width="5" height="4" rx=".6"/><path class="mo-draw" d="M13.5 8h4.5"/><path class="mo-draw mo-d1" d="M13.5 11h4.5"/><path class="mo-draw mo-d2" d="M6 14.5h12"/><path class="mo-draw mo-d3" d="M6 17.5h8"/></svg></span>
         <p class="rs-card__title" data-i18n="rs.news.in.6.t">New guides</p>
         <p class="rs-card__text" data-i18n="rs.news.in.6">The latest articles of the Stanza journal, in a sentence each.</p>
         
@@ -225,7 +227,7 @@
           <li data-i18n="rs.news.prom.3"><b>Your address stays with us.</b> It is used only to send you this newsletter.</li>
           <li data-i18n="rs.news.prom.4"><b>Leave in one step.</b> Every issue contains an unsubscribe link.</li>
         </ul>
-        <div class="rs-callout" data-reveal><span class="rs-icon"><svg width="20" height="20" aria-hidden="true"><use href="#i-book-open"/></svg></span><div><p data-i18n="rs.news.journal">Prefer to read at your own pace? All our guides are also published in the <a href="/journal">Stanza journal</a>, and the <a href="/glossary">glossary</a> explains every term.</p></div></div>
+        <div class="rs-callout" data-reveal><span class="rs-icon"><svg class="mo mo--book-open" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path d="M12 7C10 5.5 7 5 4 5.5v12c3-.5 6 0 8 1.5"/><path d="M12 7c2-1.5 5-2 8-1.5v12c-3-.5-6 0-8 1.5"/><path d="M12 7v12"/><path class="mo-flip mo-acc" d="M12 7c1.6-1.2 4-1.6 6.5-1.3v11.6c-2.5-.3-4.9.1-6.5 1.3"/></svg></span><div><p data-i18n="rs.news.journal">Prefer to read at your own pace? All our guides are also published in the <a href="/journal">Stanza journal</a>, and the <a href="/glossary">glossary</a> explains every term.</p></div></div>
       </div>
     </div>
     </div>
@@ -238,42 +240,42 @@
       </div>
       <div class="rs-grid" data-reveal>
         <a class="rs-card" href="/help">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-life-buoy"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--life-buoy" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><g class="mo-spin"><path class="mo-acc" d="M5.6 5.6 9.2 9.2M14.8 14.8l3.6 3.6M14.8 9.2l3.6-3.6M5.6 18.4l3.6-3.6"/></g></svg></span>
           <p class="rs-card__title" data-i18n="nav.help">Help center</p>
           <p class="rs-card__text" data-i18n="nav.help.s">Find quick answers</p>
         </a>
         <a class="rs-card" href="/free-check">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-search-check"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--search-check" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><g class="mo-sway"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></g><path class="mo-draw mo-acc" d="m8 10.6 1.8 1.8 3.2-3.4"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.check">Free check</p>
-          <p class="rs-card__text" data-i18n="nav.check.s">Your email domain, checked for free</p>
+          <p class="rs-card__text" data-i18n="nav.check.s">Your cookie banner, checked for free</p>
         </a>
         <a class="rs-card" href="/contact">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-message-square"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--message-square" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path d="M4 5h16v11H9l-5 4z"/><circle class="mo-f mo-blink" cx="8.5" cy="10.5" r="1"/><circle class="mo-f mo-blink mo-d1" cx="12" cy="10.5" r="1"/><circle class="mo-f mo-blink mo-d2" cx="15.5" cy="10.5" r="1"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.contactus">Contact us</p>
           <p class="rs-card__text" data-i18n="nav.contactus.s">Speak to our team</p>
         </a>
         <a class="rs-card" href="/guarantees">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-clock"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--clock" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path class="mo-hand mo-hand--slow" d="M12 12V7.5"/><path class="mo-hand mo-acc" d="M12 12h4.5"/><circle class="mo-f" cx="12" cy="12" r="1"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.guar">Guarantees &amp; delivery times</p>
           <p class="rs-card__text" data-i18n="nav.guar.s">On time, or refunded</p>
         </a>
         <a class="rs-card" href="/security">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-lock-keyhole"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--lock-keyhole" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path class="mo-lift" d="M8 11V8a4 4 0 0 1 8 0v3"/><circle class="mo-f mo-blink" cx="12" cy="15.4" r="1.3"/><path d="M12 16.6V18"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.security">Security &amp; access</p>
           <p class="rs-card__text" data-i18n="nav.security.s">How we handle your credentials</p>
         </a>
         <a class="rs-card" href="/who-its-for">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-users"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--users" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><g class="mo-fade mo-acc"><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14c2.8 0 4.5 2 4.5 5"/></g></svg></span>
           <p class="rs-card__title" data-i18n="nav.who">Who it's for</p>
           <p class="rs-card__text" data-i18n="nav.who.s">Companies, freelancers, agencies…</p>
         </a>
         <a class="rs-card" href="/specialists">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-user-check"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--user-check" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path class="mo-draw mo-acc" d="m15.5 11.5 2 2 4-4"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.become">Become a specialist</p>
           <p class="rs-card__text" data-i18n="nav.become.s">Join the network</p>
         </a>
         <a class="rs-card" href="/glossary">
-          <span class="rs-icon"><svg width="18" height="18" aria-hidden="true"><use href="#i-book-open"/></svg></span>
+          <span class="rs-icon"><svg class="mo mo--book-open" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false"><path d="M12 7C10 5.5 7 5 4 5.5v12c3-.5 6 0 8 1.5"/><path d="M12 7c2-1.5 5-2 8-1.5v12c-3-.5-6 0-8 1.5"/><path d="M12 7v12"/><path class="mo-flip mo-acc" d="M12 7c1.6-1.2 4-1.6 6.5-1.3v11.6c-2.5-.3-4.9.1-6.5 1.3"/></svg></span>
           <p class="rs-card__title" data-i18n="nav.glossary">Glossary</p>
           <p class="rs-card__text" data-i18n="rs.glossary.s">SPF, DMARC, Consent Mode, RGAA… in plain words</p>
         </a>

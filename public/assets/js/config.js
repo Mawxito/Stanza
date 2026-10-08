@@ -23,6 +23,7 @@ window.STANZA_CONFIG = {
     quote: 'REPLACE_TALLY_QUOTE_FORM_ID',          // Multi-domain quote (hidden field "domains")
     specialist: 'REPLACE_TALLY_SPECIALIST_FORM_ID', // Become a Stanza specialist
     dnsCheck: 'REPLACE_TALLY_DNS_CHECK_FORM_ID',   // Free deliverability check
+    consentCheck: 'REPLACE_TALLY_CONSENT_CHECK_FORM_ID', // Free cookie consent check (page /free-check)
     newsletter: 'REPLACE_TALLY_NEWSLETTER_FORM_ID',
   },
 
