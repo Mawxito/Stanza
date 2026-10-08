@@ -13,8 +13,24 @@
   // The page language is set on <html lang> by the server (functions/_middleware.js).
   var FR = doc.lang === 'fr';
   var T = FR
-    ? { redirect: 'Redirection vers le paiement…', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', slide: 'Diapositive ' }
-    : { redirect: 'Redirecting to checkout…', openMenu: 'Open menu', closeMenu: 'Close menu', slide: 'Slide ' };
+    ? {
+      redirect: 'Redirection vers le paiement…', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', slide: 'Diapositive ',
+      portal: 'Portail', account: 'Ouvrir votre espace client, connecté en tant que ',
+      note: 'Précisions (facultatif)', notePh: 'Domaines concernés, outils d’envoi, échéance…',
+      sentFrom: 'Envoyé depuis votre compte ', sending: 'Envoi…',
+      quoteMsg: function (n) { return 'Demande de devis multi-domaines : ' + n + ' domaines.'; },
+      sentTitle: 'Demande envoyée.', sentText: 'Votre devis arrivera dans vos messages du portail et par e-mail.',
+      openPortal: 'Ouvrir le portail', sendError: 'L’envoi n’a pas abouti. Réessayez dans un instant ou contactez-nous.'
+    }
+    : {
+      redirect: 'Redirecting to checkout…', openMenu: 'Open menu', closeMenu: 'Close menu', slide: 'Slide ',
+      portal: 'Portal', account: 'Open your client area, signed in as ',
+      note: 'Details (optional)', notePh: 'Domains concerned, sending tools, deadline…',
+      sentFrom: 'Sent from your account ', sending: 'Sending…',
+      quoteMsg: function (n) { return 'Multi-domain quote request: ' + n + ' domains.'; },
+      sentTitle: 'Request sent.', sentText: 'Your quote will arrive in your portal messages and by email.',
+      openPortal: 'Open the portal', sendError: 'Your request could not be sent. Please try again in a moment or contact us.'
+    };
 
   /* ------------------------------------------------------------------
    * Tally + Stripe wiring
@@ -56,15 +72,227 @@
     });
   });
 
-  // Quote requests (multi-domain): the number of domains goes to the Tally "quote" form.
+  /* ------------------------------------------------------------------
+   * Signed-in state, read from the client area (Stanza portal).
+   * The site and the portal share the same registrable domain, so the portal's
+   * session cookies go with a credentialed fetch; the portal answers with CORS
+   * restricted to the site's origins. Signed in: "Log in" becomes the visitor's
+   * first name and "Get started" becomes "Portal". Any failure: nothing changes.
+   * ------------------------------------------------------------------ */
+  var loginLinks = $$('[data-session="login"]');
+  var signupLinks = $$('[data-session="signup"]');
+  var PORTAL = (function () {
+    var a = loginLinks[0] || signupLinks[0];
+    try { if (a) return new URL(a.href).origin; } catch (e) { /* fall back to the config */ }
+    return String(CFG.portalUrl || 'https://portail.stanzafix.com').replace(/\/$/, '');
+  })();
+  var LANG_QS = 'lang=' + (FR ? 'fr' : 'en');
+  var withLang = function (url) { return url + (url.indexOf('?') < 0 ? '?' : '&') + LANG_QS; };
+  var SESSION_KEY = 'stanza_session';
+
+  // "Log in" brings the visitor back to this page once signed in (?next=, checked by the portal).
+  loginLinks.forEach(function (a) {
+    a.href = PORTAL + '/login?next=' + encodeURIComponent(location.href.split('#')[0]) + '&' + LANG_QS;
+  });
+
+  var userIcon = '<svg class="session-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+  function swapLink(a, fill, animate) {
+    if (!a.hasAttribute('data-session-orig')) {
+      a.setAttribute('data-session-orig', JSON.stringify({ html: a.innerHTML, href: a.getAttribute('href') }));
+    }
+    var apply = function () {
+      // Keep at least the original width so the header does not jump.
+      if (!a.style.minWidth && a.offsetWidth) a.style.minWidth = a.offsetWidth + 'px';
+      fill();
+      a.classList.remove('is-swapping');
+    };
+    if (!animate || reduceMotion) { apply(); return; }
+    a.classList.add('is-swapping');
+    setTimeout(apply, 180);
+  }
+  function restoreLink(a) {
+    var orig = a.getAttribute('data-session-orig');
+    if (!orig) return;
+    try { orig = JSON.parse(orig); } catch (e) { return; }
+    a.innerHTML = orig.html;
+    a.setAttribute('href', orig.href);
+    a.removeAttribute('data-session-orig');
+    a.removeAttribute('data-signed-in');
+    a.removeAttribute('aria-label');
+    a.style.minWidth = '';
+  }
+  function portalHome(s) {
+    try { if (s.portal_url && new URL(s.portal_url).origin === PORTAL) return withLang(s.portal_url.replace(/\/$/, '') + '/'); } catch (e) { /* ignore */ }
+    return withLang(PORTAL + '/');
+  }
+  function applySession(s, animate) {
+    var home = portalHome(s);
+    loginLinks.forEach(function (a) {
+      swapLink(a, function () {
+        a.setAttribute('href', home);
+        a.setAttribute('data-signed-in', '');
+        a.setAttribute('aria-label', T.account + s.name);
+        a.innerHTML = userIcon;
+        var name = document.createElement('span');
+        name.className = 'session-name';
+        name.textContent = s.name;
+        a.appendChild(name);
+      }, animate);
+    });
+    signupLinks.forEach(function (a) {
+      swapLink(a, function () {
+        a.setAttribute('href', home);
+        a.setAttribute('data-signed-in', '');
+        a.textContent = T.portal;
+      }, animate);
+    });
+  }
+  function readCache() {
+    try {
+      var c = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+      return c && c.name && Date.now() - c.t < 15 * 60 * 1000 ? c : null;
+    } catch (e) { return null; }
+  }
+  function writeCache(s) {
+    try {
+      if (s) sessionStorage.setItem(SESSION_KEY, JSON.stringify({ name: s.name, role: s.role, portal_url: s.portal_url, t: Date.now() }));
+      else sessionStorage.removeItem(SESSION_KEY);
+    } catch (e) { /* storage blocked: no cache */ }
+  }
+
+  // A previous page already knew the visitor: show it at once, then check again.
+  var cached = readCache();
+  if (cached) applySession(cached, false);
+
+  // Resolves with { signed_in: true, name, role, portal_url } or null (signed out or unreachable).
+  var session = new Promise(function (resolve) {
+    if (!window.fetch || !window.Promise) { resolve(null); return; }
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); resolve(null); }, 6000);
+    fetch(PORTAL + '/api/session', { credentials: 'include', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (s) {
+        clearTimeout(timer);
+        var ok = s && s.signed_in === true && typeof s.name === 'string' && s.name ? s : null;
+        if (ok) {
+          writeCache(ok);
+          applySession(ok, !cached);
+        } else if (s) {
+          // The portal answered "signed out": forget a stale name.
+          writeCache(null);
+          if (cached) loginLinks.concat(signupLinks).forEach(restoreLink);
+        }
+        resolve(ok);
+      })
+      .catch(function () { clearTimeout(timer); resolve(null); });
+  });
+  window.STANZA_SESSION = session;
+
+  /* ------------------------------------------------------------------
+   * Quote requests (multi-domain).
+   * Signed out: the number of domains goes to the Tally "quote" form (unchanged).
+   * Signed in: the request goes straight to the portal, tied to the account
+   * (POST /api/site-request); the quote then arrives in the portal messages.
+   * ------------------------------------------------------------------ */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+  function enhanceQuote(form, s) {
+    if (form.hasAttribute('data-account')) return;
+    form.setAttribute('data-account', '');
+    var btn = form.querySelector('button');
+    var field = el('label', 'offer__field offer__field--note');
+    field.appendChild(el('span', '', T.note));
+    var area = document.createElement('textarea');
+    area.name = 'note';
+    area.rows = 3;
+    area.maxLength = 2000;
+    area.placeholder = T.notePh;
+    field.appendChild(area);
+    var who = el('p', 'offer__account');
+    who.innerHTML = userIcon;
+    who.appendChild(document.createTextNode(T.sentFrom));
+    who.appendChild(el('b', '', s.name));
+    var error = el('p', 'offer__error');
+    error.setAttribute('role', 'alert');
+    error.hidden = true;
+    form.insertBefore(field, btn);
+    form.insertBefore(who, btn);
+    form.appendChild(error);
+    if (!reduceMotion) { field.classList.add('is-entering'); who.classList.add('is-entering'); requestAnimationFrame(function () { requestAnimationFrame(function () { field.classList.remove('is-entering'); who.classList.remove('is-entering'); }); }); }
+  }
+  function leaveAccountMode(form) {
+    form.removeAttribute('data-account');
+    $$('.offer__field--note, .offer__account, .offer__error', form).forEach(function (n) { n.parentNode.removeChild(n); });
+  }
+  function sendQuote(form) {
+    var btn = form.querySelector('button[type="submit"], button');
+    var error = form.querySelector('.offer__error');
+    var domains = parseInt(form.querySelector('[name="domains"]').value, 10);
+    var note = (form.querySelector('[name="note"]') || {}).value || '';
+    var message = T.quoteMsg(domains) + (note.trim() ? '\n\n' + note.trim() : '');
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = T.sending;
+    if (error) error.hidden = true;
+    var done = function () { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = label; };
+    fetch(PORTAL + '/api/site-request', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind: 'quote',
+        message: message.slice(0, 5000),
+        payload: { domains: domains, offer: form.getAttribute('data-quote') || 'multi-domains', page: location.pathname, lang: doc.lang }
+      })
+    }).then(function (r) {
+      if (r.status === 401) {
+        // Session expired meanwhile: back to the regular form.
+        done();
+        writeCache(null);
+        leaveAccountMode(form);
+        openTally('quote', { domains: domains, offer: form.getAttribute('data-quote'), lang: doc.lang });
+        return;
+      }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      session.then(function (s) {
+        var box = el('div', 'offer__sent');
+        box.setAttribute('role', 'status');
+        box.setAttribute('tabindex', '-1');
+        box.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 5-5.5"/></svg>';
+        var text = el('p');
+        text.appendChild(el('b', '', T.sentTitle));
+        text.appendChild(document.createTextNode(' ' + T.sentText));
+        box.appendChild(text);
+        var link = el('a', 'arrow-link');
+        link.href = s ? portalHome(s) : withLang(PORTAL + '/');
+        link.appendChild(el('span', '', T.openPortal));
+        link.appendChild(el('span', '', ' →'));
+        box.appendChild(link);
+        form.parentNode.replaceChild(box, form);
+        box.focus({ preventScroll: true });
+      });
+    }).catch(function () {
+      done();
+      if (error) { error.textContent = T.sendError; error.hidden = false; }
+    });
+  }
   $$('[data-quote]').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var input = form.querySelector('[name="domains"]');
       if (!form.reportValidity()) return;
+      if (form.hasAttribute('data-account')) { sendQuote(form); return; }
+      var input = form.querySelector('[name="domains"]');
       openTally('quote', { domains: input.value, offer: form.getAttribute('data-quote'), lang: doc.lang });
     });
   });
+  if ($('[data-quote]')) {
+    session.then(function (s) { if (s) $$('[data-quote]').forEach(function (f) { enhanceQuote(f, s); }); });
+  }
   if (isSet(CFG.tally && CFG.tally.quote)) loadTally();
 
   // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).

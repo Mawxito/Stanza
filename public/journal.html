@@ -78,17 +78,19 @@
               <div class="dropdown__col">
                 <p class="dropdown__title"><svg width="14" height="14"><use href="#i-life-buoy"/></svg><span data-i18n="nav.support">Support</span></p>
                 <ul>
-                  <li><a class="dropdown__link" href="/#faq"><span data-i18n="nav.help">Help center</span><small data-i18n="nav.help.s">Find quick answers</small></a></li>
-                  <li><a class="dropdown__link" href="#" data-tally="contact"><span data-i18n="nav.check">Free check</span><small data-i18n="nav.check.s">Contact the team</small></a></li>
-                  <li><a class="dropdown__link" href="#" data-tally="contact"><span data-i18n="nav.contactus">Contact us</span><small data-i18n="nav.contactus.s">Speak to our team</small></a></li>
+                  <li><a class="dropdown__link" href="/help"><span data-i18n="nav.help">Help center</span><small data-i18n="nav.help.s">Find quick answers</small></a></li>
+                  <li><a class="dropdown__link" href="/free-check"><span data-i18n="nav.check">Free check</span><small data-i18n="nav.check.s">Your email domain, checked for free</small></a></li>
+                  <li><a class="dropdown__link" href="/contact"><span data-i18n="nav.contactus">Contact us</span><small data-i18n="nav.contactus.s">Speak to our team</small></a></li>
+                  <li><a class="dropdown__link" href="/guarantees"><span data-i18n="nav.guar">Guarantees &amp; delivery times</span><small data-i18n="nav.guar.s">On time, or refunded</small></a></li>
                 </ul>
               </div>
               <div class="dropdown__col">
                 <p class="dropdown__title"><svg width="14" height="14"><use href="#i-building-2"/></svg><span data-i18n="nav.company">Company</span></p>
                 <ul>
-                  <li><a class="dropdown__link" href="#" data-tally="specialist"><span data-i18n="nav.become">Become a specialist</span><small data-i18n="nav.become.s">Join the network</small></a></li>
-                  <li><a class="dropdown__link" href="/#audiences"><span data-i18n="nav.who">Who it's for</span><small data-i18n="nav.who.s">Companies, freelancers, agencies…</small></a></li>
-                  <li><a class="dropdown__link" href="#" data-tally="newsletter"><span data-i18n="nav.news">Newsletter</span><small data-i18n="nav.news.s">Compliance &amp; deliverability news</small></a></li>
+                  <li><a class="dropdown__link" href="/who-its-for"><span data-i18n="nav.who">Who it's for</span><small data-i18n="nav.who.s">Companies, freelancers, agencies…</small></a></li>
+                  <li><a class="dropdown__link" href="/security"><span data-i18n="nav.security">Security &amp; access</span><small data-i18n="nav.security.s">How we handle your credentials</small></a></li>
+                  <li><a class="dropdown__link" href="/specialists"><span data-i18n="nav.become">Become a specialist</span><small data-i18n="nav.become.s">Join the network</small></a></li>
+                  <li><a class="dropdown__link" href="/newsletter"><span data-i18n="nav.news">Newsletter</span><small data-i18n="nav.news.s">Compliance &amp; deliverability news</small></a></li>
                 </ul>
               </div>
               <div class="dropdown__col">
@@ -100,7 +102,10 @@
                   </span>
                   <span class="dropdown__feature-text" data-i18n="nav.blog.text">Our guides to SPF, DKIM, DMARC, consent and accessibility.</span>
                 </a>
-                <a class="arrow-link" href="/journal"><span data-i18n="nav.blog.cta">Browse blog</span> <span aria-hidden="true">→</span></a>
+                <div class="dropdown__links">
+                  <a class="arrow-link" href="/journal"><span data-i18n="nav.blog.cta">Browse blog</span> <span aria-hidden="true">→</span></a>
+                  <a class="arrow-link" href="/glossary"><span data-i18n="nav.glossary">Glossary</span> <span aria-hidden="true">→</span></a>
+                </div>
               </div>
             </div>
           </div>
@@ -109,9 +114,9 @@
       </ul>
 
       <div class="nav__mobile-actions">
-        <a class="btn btn--light btn--block" href="https://portail.stanzafix.com/signup" data-i18n="nav.start">Get started</a>
+        <a class="btn btn--light btn--block" href="https://portail.stanzafix.com/signup" data-session="signup" data-i18n="nav.start">Get started</a>
         <a class="btn btn--outline-light btn--block" href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a>
-        <a class="text-btn" href="https://portail.stanzafix.com/login" data-i18n="nav.login">Log in</a>
+        <a class="text-btn" href="https://portail.stanzafix.com/login" data-session="login" data-i18n="nav.login">Log in</a>
       </div>
     </nav>
 
@@ -121,9 +126,9 @@
         <a class="lang__opt" href="?lang=en" hreflang="en" lang="en" data-lang="en" aria-label="English">EN</a>
         <a class="lang__opt" href="?lang=fr" hreflang="fr" lang="fr" data-lang="fr" aria-label="Français">FR</a>
       </div>
-      <a class="text-btn header__login" href="https://portail.stanzafix.com/login" data-i18n="nav.login">Log in</a>
+      <a class="text-btn header__login" href="https://portail.stanzafix.com/login" data-session="login" data-i18n="nav.login">Log in</a>
       <a class="btn btn--outline-light btn--sm header__contact" href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a>
-      <a class="btn btn--light btn--sm header__signup" href="https://portail.stanzafix.com/signup" data-i18n="nav.start">Get started</a>
+      <a class="btn btn--light btn--sm header__signup" href="https://portail.stanzafix.com/signup" data-session="signup" data-i18n="nav.start">Get started</a>
       <button class="burger" type="button" aria-label="Open menu" aria-expanded="false" data-burger>
         <span></span><span></span><span></span>
       </button>
@@ -245,8 +250,8 @@
           <li><a href="/pricing" data-i18n="nav.pricing">Pricing</a></li>
           <li class="footer__drop"><button type="button" aria-expanded="false">Packs<svg width="18" height="18"><use href="#i-chevron-down"/></svg></button>
             <ul><li><a href="/pricing#pack-compliance" data-product-name="pack-compliance">Compliance Pack</a></li><li><a href="/pricing#pack-revenue" data-product-name="pack-revenue">Revenue Pack</a></li><li><a href="/pricing#pack-complete" data-product-name="pack-complete">Complete Pack</a></li><li><a href="/pricing#multi-domains" data-product-name="multi-domains">Multi-domain</a></li></ul></li>
-          <li><a href="/#audiences" data-i18n="ft.who">Who it's for</a></li>
-          <li><a href="#" data-tally="contact" data-i18n="ft.agencies">Agencies</a></li>
+          <li><a href="/who-its-for" data-i18n="ft.who">Who it's for</a></li>
+          <li><a href="/who-its-for#agencies" data-i18n="ft.agencies">Agencies</a></li>
         </ul>
       </div>
       <div class="footer__col">
@@ -277,21 +282,24 @@
         <h3 class="footer__heading" data-i18n="nav.resources">Resources</h3>
         <ul class="footer__menu footer__menu--tight">
           <li><a href="/journal" data-i18n="nav.blog">Blog</a></li>
-          <li><a href="/#faq" data-i18n="nav.help">Help center</a></li>
-          <li><a href="#" data-tally="contact" data-i18n="nav.check">Free check</a></li>
+          <li><a href="/help" data-i18n="nav.help">Help center</a></li>
+          <li><a href="/free-check" data-i18n="nav.check">Free check</a></li>
+          <li><a href="/guarantees" data-i18n="ft.guar">Guarantees</a></li>
           <li><a href="/pricing#pricing-faq" data-i18n="ft.faq">Pricing FAQ</a></li>
-          <li><a href="#" data-tally="specialist" data-i18n="nav.become">Become a specialist</a></li>
+          <li><a href="/glossary" data-i18n="nav.glossary">Glossary</a></li>
+          <li><a href="/specialists" data-i18n="nav.become">Become a specialist</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h3 class="footer__heading" data-i18n="ft.about">Get to know us</h3>
         <ul class="footer__menu footer__menu--tight">
           <li><a href="/#why" data-i18n="ft.aboutus">About us</a></li>
-          <li><a href="#" data-tally="contact" data-i18n="nav.contact">Contact sales</a></li>
+          <li><a href="/contact" data-i18n="nav.contactus">Contact us</a></li>
+          <li><a href="/security" data-i18n="ft.security">Security</a></li>
           <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.legal">Legal notice</a></li>
           <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.privacy">Privacy policy</a></li>
           <li><a href="https://portail.stanzafix.com/legal" data-portal-href="/legal" data-i18n="ft.terms">Terms of service</a></li>
-          <li><a href="#" data-tally="newsletter" data-i18n="nav.news">Newsletter</a></li>
+          <li><a href="/newsletter" data-i18n="nav.news">Newsletter</a></li>
         </ul>
         <div class="footer__social">
           <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg></a>

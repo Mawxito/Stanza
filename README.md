@@ -18,6 +18,9 @@ public/                       Site publié par Cloudflare Pages (textes en angla
   index.html                  Accueil : description des services, sans aucun prix
   pricing.html                Page Tarifs (/pricing) : packs, services, délais, FAQ
   success.html                Retour après paiement
+  help.html, free-check.html, contact.html, guarantees.html, security.html,
+  who-its-for.html, specialists.html, newsletter.html, glossary.html
+                              Pages Ressources (/help, /free-check…), liées depuis le menu Ressources et le pied de page
   journal.html                Gabarit du journal (/journal et /journal/<slug>, remplis par functions/journal/)
   assets/js/journal.js        Filtres du journal sans rechargement, animations, barre de lecture
   assets/js/auth.js           Comportement de ces deux pages
@@ -45,6 +48,10 @@ wrangler.toml                 Config Cloudflare Pages
 - **Langue choisie** : le bouton EN / FR (à gauche de « Log in ») pointe vers `?lang=en` / `?lang=fr` et mémorise le choix dans un cookie `stanza_lang` (cookie de préférence, exempté de consentement).
 - **Sans choix** : visiteur situé en France (DOM-TOM compris, d'après Cloudflare) → français ; ailleurs → anglais.
 - **Modifier un texte** : l'anglais dans le HTML, le français dans `strings-fr.js` (même clé). Puis `npm run check:i18n` signale les traductions manquantes.
+
+## Visiteur connecté au portail
+
+`assets/js/main.js` appelle `https://portail.stanzafix.com/api/session` (cookies du portail, CORS limité à stanzafix.com) : connecté, « Connexion » devient le prénom du visiteur et « Commencer » devient « Portail ». Les liens « Connexion » pointent vers `/login?next=<page courante>` : après connexion, le visiteur revient sur la page qu'il quittait. Connecté, la demande de devis multi-domaines part directement vers `POST /api/site-request` du portail, rattachée à son compte (sinon, formulaire Tally comme avant). En cas d'échec, rien ne change.
 
 ## Produits et prix
 
