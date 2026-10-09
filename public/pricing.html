@@ -259,15 +259,46 @@
   </div>
 
   <!-- ============================== HOW IT WORKS ============================== -->
-  <section class="how u-dark">
+  <!-- Order journey: a comet travels from station to station along the curve (SVG, SMIL); the guaranteed
+       timeline starts when we have your access and stops when Stanza has checked the work. 12 s loop,
+       frozen for visitors who reduce motion. Station positions match the four columns below. -->
+  <section class="how u-dark" aria-labelledby="how-title">
     <div class="container">
-      <h2 class="h2 h2--center" data-reveal data-i18n="pr.how.t">How an order works</h2>
+      <header class="how__head" data-reveal>
+        <div>
+          <p class="eyebrow eyebrow--dark" data-i18n="pr.how.k">Step by step</p>
+          <h2 class="how__title" id="how-title" data-i18n="pr.how.t">How an order <em>works</em></h2>
+        </div>
+        <p class="how__clock" aria-hidden="true">
+          <span class="how__clock-label" data-i18n="pr.how.clock">Guaranteed timeline</span>
+          <span class="how__digits"><span class="how__h"></span>:<span class="how__m"></span>:<span class="how__s"></span></span>
+          <span class="how__state"><i data-i18n="pr.how.idle">not started yet</i><i data-i18n="pr.how.run">running</i><i data-i18n="pr.how.stop">stopped by Stanza</i></span>
+        </p>
+      </header>
+      <svg class="how__scene" viewBox="0 0 1200 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true" data-reveal>
+        <defs>
+          <radialGradient id="how-glow"><stop offset="0" stop-color="#7cb4ff" stop-opacity=".9"/><stop offset="1" stop-color="#7cb4ff" stop-opacity="0"/></radialGradient>
+        </defs>
+        <path class="how__rail" d="M150 100 C 250 26, 350 36, 450 72 S 650 126, 750 92 S 950 18, 1050 46"/>
+        <path id="how-path" class="how__ink" pathLength="1" d="M150 100 C 250 26, 350 36, 450 72 S 650 126, 750 92 S 950 18, 1050 46">
+          <animate attributeName="stroke-dashoffset" dur="12s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.18;0.24;0.46;0.62;0.84;1" values="1;0.661;0.661;0.331;0.331;0;0"/>
+        </path>
+        <g class="how__station how__station--1" transform="translate(150 100)"><circle class="how__halo" r="22"/><circle class="how__ring" r="9"/><circle class="how__core" r="3.5"/></g>
+        <g class="how__station how__station--2" transform="translate(450 72)"><circle class="how__halo" r="22"/><circle class="how__ring" r="9"/><circle class="how__core" r="3.5"/></g>
+        <g class="how__station how__station--3" transform="translate(750 92)"><circle class="how__halo" r="22"/><circle class="how__ring" r="9"/><circle class="how__core" r="3.5"/></g>
+        <g class="how__station how__station--4" transform="translate(1050 46)"><circle class="how__halo" r="22"/><circle class="how__ring" r="9"/><circle class="how__core" r="3.5"/></g>
+        <g class="how__comet">
+          <circle r="16" fill="url(#how-glow)"/><circle r="4" fill="#fff"/>
+          <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.18;0.24;0.46;0.62;0.84;1" keyPoints="0;0.339;0.339;0.669;0.669;1;1"><mpath href="#how-path"/></animateMotion>
+        </g>
+      </svg>
       <ol class="how__steps" data-reveal>
-        <li><span class="how__num">1</span><h3 data-i18n="pr.how.1.t">You choose and check out</h3><p data-i18n="pr.how.1">Secure payment by Stripe. Your card is authorized, not charged.</p></li>
-        <li><span class="how__num">2</span><h3 data-i18n="pr.how.2.t">You share your access</h3><p data-i18n="pr.how.2">A 2-minute form: your domain, your site, your tools and how to give temporary access.</p></li>
-        <li><span class="how__num">3</span><h3 data-i18n="pr.how.3.t">You follow it from 0 to 100%</h3><p data-i18n="pr.how.3">A vetted expert does the work within the time you chose; you follow each step in your client area.</p></li>
-        <li><span class="how__num">4</span><h3 data-i18n="pr.how.4.t">You validate, then pay</h3><p data-i18n="pr.how.4">Automated checks and a test report. Your card is charged only after your sign-off.</p></li>
+        <li><span class="how__num">01</span><h3 data-i18n="pr.how.1.t">You choose and check out</h3><p data-i18n="pr.how.1">Secure payment by Stripe. Your card is authorized, not charged.</p></li>
+        <li><span class="how__num">02</span><h3 data-i18n="pr.how.2.t">You share your access</h3><p data-i18n="pr.how.2">A 2-minute form: your domain, your site, your tools and a temporary access. The guaranteed timeline starts once we have it.</p></li>
+        <li><span class="how__num">03</span><h3 data-i18n="pr.how.3.t">An expert works, Stanza checks</h3><p data-i18n="pr.how.3">A vetted expert does the work and you follow each step in your client area. We go over everything before delivering: the timeline stops there.</p></li>
+        <li><span class="how__num">04</span><h3 data-i18n="pr.how.4.t">You approve, then you pay</h3><p data-i18n="pr.how.4">You read the test report and give the go-ahead. Only then is your card charged.</p></li>
       </ol>
+      <p class="how__note" data-reveal data-i18n="pr.how.note"><b>A practical note:</b> your bank only holds the card reservation for 7 days after the order. When the report arrives, read it and approve without waiting too long.</p>
     </div>
   </section>
 
