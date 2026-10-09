@@ -533,8 +533,32 @@ summary::-webkit-details-marker { display: none; }
 .tm--media-left .tm__content { padding-left: 2px; }
 .tm__media { position: relative; aspect-ratio: 629 / 420; border-radius: var(--radius-md); overflow: hidden; }
 
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
-.feature { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; }
+/* Solution details: a hairline drawn in when the block comes into view, a light travelling along it,
+   an outlined serif numeral, then the title and text. Same component in light and dark sections. */
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 56px; }
+.feature { position: relative; display: grid; align-content: start; gap: 10px; padding-top: 24px; }
+.feature::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: rgba(31,36,48,.14); transform-origin: 0 50%; transform: scaleX(0); }
+.feature::after { content: ''; position: absolute; top: -3px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--blue-500); box-shadow: 0 0 0 4px rgba(63,127,232,.15), 0 0 14px rgba(63,127,232,.8); opacity: 0; }
+.features.is-visible .feature::before { animation: featRule 1.1s var(--ease-out) forwards; }
+.features.is-visible .feature::after { animation: featSpark 2.2s var(--ease-out) forwards; }
+.features.is-visible .feature:nth-child(2)::before, .features.is-visible .feature:nth-child(2)::after { animation-delay: .18s; }
+.features.is-visible .feature:nth-child(3)::before, .features.is-visible .feature:nth-child(3)::after { animation-delay: .36s; }
+.features.is-visible .feature:nth-child(4)::before, .features.is-visible .feature:nth-child(4)::after { animation-delay: .54s; }
+.feature__num { font-family: var(--serif); font-size: 46px; line-height: 1; letter-spacing: -1px; color: transparent; -webkit-text-stroke: 1px rgba(47,111,219,.5); transition: color .35s var(--ease-out), -webkit-text-stroke-color .35s; }
+.feature:hover .feature__num { color: var(--blue-500); -webkit-text-stroke-color: transparent; }
+.feature__title { font-size: 22px; line-height: 1.2; font-weight: 500; letter-spacing: -0.2px; margin: 4px 0 0; }
+.feature__text { margin-top: 2px; font-size: 16px; line-height: 1.5; color: var(--muted-light); }
+.tm--dark .feature::before { background: rgba(255,255,255,.16); }
+.tm--dark .feature::after { background: var(--blue-300); box-shadow: 0 0 0 4px rgba(124,180,255,.14), 0 0 14px rgba(124,180,255,.85); }
+.tm--dark .feature__num { -webkit-text-stroke-color: rgba(207,224,250,.55); }
+.tm--dark .feature:hover .feature__num { color: var(--blue-300); }
+.tm--dark .feature__text { color: var(--muted-dark); }
+@keyframes featRule { to { transform: scaleX(1); } }
+@keyframes featSpark { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 55% { left: calc(100% - 7px); opacity: 1; } 100% { left: calc(100% - 7px); opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  .feature::before { transform: none; animation: none !important; }
+  .feature::after { display: none; }
+}
 .icon-box {
   width: 44px; height: 44px; border-radius: var(--radius-xs); padding: 1px;
   background: linear-gradient(90deg, #5d93f0, #fff 50%, #5d93f0);
@@ -542,8 +566,7 @@ summary::-webkit-details-marker { display: none; }
   display: block;
 }
 .icon-box svg { width: 42px; height: 42px; padding: 9px; border-radius: var(--radius-xs); background: var(--dark); color: #fff; }
-.feature__title { font-size: 24px; line-height: 1.15; font-weight: 500; letter-spacing: -0.24px; margin: 0 0 8px; }
-.feature__text { font-size: 16px; line-height: 1.3; }
+
 
 /* --- light media composition --- */
 .media-light { background: linear-gradient(180deg, #eef1f6 0%, #e6eaf1 60%, #f1f3f7 100%); }
@@ -1234,7 +1257,6 @@ summary::-webkit-details-marker { display: none; }
 .tm__free b { color: var(--blue-300); font-weight: 500; }
 .tm__btns { display: flex; flex-wrap: wrap; gap: 12px; }
 .features--4 { grid-template-columns: repeat(4, 1fr); gap: 28px; }
-.features--4 .feature { grid-template-columns: 44px 1fr; }
 .fine-callout__scope { padding: 10px 0 12px; border-top: 1px solid var(--dark-line); font-size: 12.5px; line-height: 1.45; font-style: italic; color: var(--muted-dark); }
 .fine-callout__foot { padding-top: 12px; border-top: 1px solid var(--dark-line); font-size: 13px; line-height: 1.4; color: var(--muted-dark); }
 .fine-callout__foot a { margin-left: 4px; text-decoration: underline; text-underline-offset: 2px; }
