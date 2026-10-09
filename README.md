@@ -88,7 +88,7 @@ npm install
 STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 16 prix (idempotent)
 ```
 
-- Utilisez une **clé restreinte** (`rk_`) plutôt que la clé secrète. Permissions : Checkout Sessions (écriture), Prices (lecture), Products (lecture ; écriture uniquement pour le script de setup), Payment Intents (lecture).
+- Utilisez une **clé restreinte** (`rk_`) plutôt que la clé secrète. Permissions : Checkout Sessions (écriture), Customers (écriture : le client Stripe est créé à la commande), Prices et Products (écriture : le paiement et `/api/sync-prices` mettent à jour les prix quand le portail les change), Payment Intents (lecture).
 - Dans **Paramètres → Informations publiques**, réglez le nom d'entreprise affiché sur Checkout (« Stanza »).
 - Le script archive aussi les anciens prix (Inbox 450 €, Consent 550 €, Complete 800 €, pack 6 domaines). Relancez-le à chaque changement de prix dans `catalog.js`.
 - Dans **Développeurs → Webhooks**, ajoutez l'endpoint `https://<votre-domaine>/api/stripe-webhook` avec les événements :
