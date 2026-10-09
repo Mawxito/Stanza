@@ -78,6 +78,12 @@ export async function onRequestPost({ request, env }) {
       tax_id_collection: { enabled: true },
       custom_text: { submit: { message: item.group === 'packs' ? PACK_NOTE[lang] : DELAY_NOTE[lang](speedLabel, lang === 'fr' ? LATE_REFUND[speed] : LATE_REFUND[speed].replace(' ', '')) } },
       metadata,
+      // A plain card authorization lasts about 7 days, which 5 business days plus the sign-off can exceed.
+      // STRIPE_EXTENDED_AUTH=on asks the card network for an extended one (up to 30 days) when the card
+      // allows it. Off by default: Stripe refuses the option (and so the whole session) for an account
+      // that is not enabled for it. Turn it on only once Stripe has enabled extended authorizations.
+      ...(captureMethod(env) === 'manual' && env.STRIPE_EXTENDED_AUTH === 'on'
+        ? { payment_method_options: { card: { request_extended_authorization: 'if_available' } } } : {}),
       payment_intent_data: {
         capture_method: captureMethod(env),
         description: `Stanza — ${item.en.name} (${speed})${promo ? ` · ${promo.label.en}` : ''}`,

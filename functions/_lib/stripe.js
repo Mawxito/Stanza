@@ -86,7 +86,8 @@ export async function lineItem(stripe, item, tier, amount, promo = null) {
 }
 
 // "manual" = authorize at checkout, capture after the acceptance gate passes
-// (card authorizations stay valid for about 7 days). "automatic" = charge immediately.
+// (a card authorization lasts about 7 days; extended authorization is opt-in, see checkout.js).
+// "automatic" = charge immediately.
 export function captureMethod(env) {
   return env.CAPTURE_METHOD === 'automatic' ? 'automatic' : 'manual';
 }

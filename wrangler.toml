@@ -4,7 +4,7 @@ pages_build_output_dir = "./public"
 compatibility_date = "2026-09-01"
 
 [vars]
-# "manual": card authorized at checkout, captured after the acceptance gate (≤ 7 days).
+# "manual": card authorized at checkout, captured after the acceptance gate (within 5 business days).
 # "automatic": charged immediately.
 CAPTURE_METHOD = "manual"
 
