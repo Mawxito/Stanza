@@ -86,9 +86,10 @@ export async function onRequestPost({ request, env }) {
       integration_identifier: INTEGRATION_IDENTIFIER,
     };
     // Stripe invoice after payment (listed in the portal, Admin → Invoices). STRIPE_INVOICES=off disables it.
-    // If Stripe refuses the option for this payment, the session is created again without it: checkout never breaks.
+    // Stripe refuses it with a manual capture (card authorized now, charged after delivery): the invoice is then
+    // created by the portal at capture. If Stripe refuses the option anyway, the session is created without it.
     let session;
-    if (env.STRIPE_INVOICES !== 'off') {
+    if (env.STRIPE_INVOICES !== 'off' && captureMethod(env) === 'automatic') {
       try {
         session = await stripe.checkout.sessions.create({
           ...params,
@@ -105,7 +106,9 @@ export async function onRequestPost({ request, env }) {
 
     return Response.redirect(session.url, 303);
   } catch (err) {
-    console.error('[checkout] failed to create session:', err && err.message);
+    // Most frequent causes: STRIPE_SECRET_KEY missing in Cloudflare Pages, or a restricted key without the
+    // « Checkout Sessions: write » / « Prices: read » permissions. GET /api/portal-status shows which.
+    console.error('[checkout] failed to create session:', err && err.type, err && err.code, err && err.message);
     return Response.redirect(`${origin}/pricing?checkout=error#${plan}`, 303);
   }
 }
