@@ -345,34 +345,60 @@
   </section>
 
   <!-- ============================== COMMITMENTS (light) ============================== -->
+  <!-- Four commitments, each with its own small animated scene (SVG + CSS, started when the grid
+       comes into view, frozen for visitors who reduce motion): a report written then sealed, a
+       temporary access that runs out on a lock, three services merging into a shorter pack bar,
+       and the client-area progress counting to 100 %. -->
   <section class="promises" id="promises">
     <div class="container container--md">
       <div class="services__head" data-reveal>
         <p class="eyebrow eyebrow--light" data-i18n="pro.eyebrow">Our commitments</p>
-        <h2 class="h2 h2--center" data-i18n="pro.title">Peace of mind to grow your business</h2>
-        <p class="body-lg" data-i18n="pro.lead">Four promises behind every order, whatever its size.</p>
+        <h2 class="promises__title" data-i18n="pro.title">Peace of mind, <em>order after order</em></h2>
+        <p class="body-lg" data-i18n="pro.lead">What we hold ourselves to on every order, small or large.</p>
       </div>
       <div class="promise-grid" data-reveal>
-        <article class="promise">
-          <span class="icon-box icon-box--live"><svg class="li li--sparkles" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></svg></span>
-          <h3 class="promise__title" data-i18n="pro.1.t">Premium, by default</h3>
-          <p class="promise__text" data-i18n="pro.1">Vetted experts, careful work on your real setup, a single point of contact and a detailed report you can share with your team, your DPO or your clients.</p>
+        <article class="promise promise--report">
+          <span class="promise__num" aria-hidden="true">01</span>
+          <svg class="promise__scene" viewBox="0 0 160 90" aria-hidden="true">
+            <rect class="pm-page" x="52" y="10" width="48" height="66" rx="5"/>
+            <path class="pm-line pm-line--1" d="M61 24h30"/><path class="pm-line pm-line--2" d="M61 33h24"/>
+            <path class="pm-line pm-line--3" d="M61 42h28"/><path class="pm-line pm-line--4" d="M61 51h18"/>
+            <g class="pm-seal" transform="translate(98 66)"><circle r="13"/><path d="m-5 0 3.5 3.5L5.5-4"/></g>
+          </svg>
+          <h3 class="promise__title" data-i18n="pro.1.t">Careful work</h3>
+          <p class="promise__text" data-i18n="pro.1">A vetted expert works on your real setup. You have a single point of contact, and a clear report to show your team, your DPO or your clients.</p>
         </article>
-        <article class="promise">
-          <span class="icon-box icon-box--live"><svg class="li li--shield-check" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" /></svg></span>
-          <h3 class="promise__title" data-i18n="pro.2.t">Secure at every step</h3>
-          <p class="promise__text" data-i18n="pro.2">Payment through Stripe, temporary access only, automated checks before delivery, and your card is charged only after you sign off.</p>
+        <article class="promise promise--lock">
+          <span class="promise__num" aria-hidden="true">02</span>
+          <svg class="promise__scene" viewBox="0 0 160 90" aria-hidden="true">
+            <circle class="pm-timer-track" cx="80" cy="48" r="32"/>
+            <circle class="pm-timer" cx="80" cy="48" r="32" pathLength="1" transform="rotate(-90 80 48)"/>
+            <path class="pm-shackle" d="M70 44v-8a10 10 0 0 1 20 0v8"/>
+            <rect class="pm-body" x="64" y="44" width="32" height="24" rx="5"/>
+            <circle class="pm-keyhole" cx="80" cy="55" r="3"/>
+          </svg>
+          <h3 class="promise__title" data-i18n="pro.2.t">Secure from end to end</h3>
+          <p class="promise__text" data-i18n="pro.2">Payment through Stripe, temporary access only, tests before every delivery. Your card is charged only once you agree.</p>
         </article>
-        <article class="promise">
-          <span class="icon-box icon-box--live"><svg class="li li--wallet" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg></span>
-          <h3 class="promise__title" data-i18n="pro.3.t">Real value for money</h3>
-          <p class="promise__text" data-i18n="pro.3">Expert-level work at a fixed price: no quote to chase, no subscription, no surprise. Packs cost less than the same services bought separately.</p>
+        <article class="promise promise--price">
+          <span class="promise__num" aria-hidden="true">03</span>
+          <svg class="promise__scene" viewBox="0 0 160 90" aria-hidden="true">
+            <rect class="pm-seg pm-seg--1" x="18" y="26" width="38" height="12" rx="6"/>
+            <rect class="pm-seg pm-seg--2" x="61" y="26" width="38" height="12" rx="6"/>
+            <rect class="pm-seg pm-seg--3" x="104" y="26" width="38" height="12" rx="6"/>
+            <rect class="pm-pack" x="18" y="52" width="100" height="12" rx="6"/>
+            <path class="pm-gap" d="M122 58h20"/>
+            <text class="pm-euro" x="146" y="63">€</text>
+          </svg>
+          <h3 class="promise__title" data-i18n="pro.3.t">A fixed price, known upfront</h3>
+          <p class="promise__text" data-i18n="pro.3">No quote to chase, no subscription, no bad surprise. As a pack, the same services cost less.</p>
         </article>
         <article class="promise promise--track">
-          <span class="icon-box icon-box--live"><svg class="li li--chart-line" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="m19 9-5 5-4-4-3 3" /></svg></span>
-          <h3 class="promise__title" data-i18n="pro.4.t">Tracking that is absurdly simple</h3>
-          <p class="promise__text" data-i18n="pro.4">In your client area, follow each step of your order: access received, configuration, tests, final report. You always know where things stand.</p>
-          <div class="promise__progress" aria-hidden="true"><span class="promise__bar"><i></i></span><b>100%</b></div>
+          <span class="promise__num" aria-hidden="true">04</span>
+          <div class="promise__scene promise__steps" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <h3 class="promise__title" data-i18n="pro.4.t">Tracking you can read at a glance</h3>
+          <p class="promise__text" data-i18n="pro.4">Access received, setup, tests, final report: you see every step move forward in your client area.</p>
+          <div class="promise__progress" aria-hidden="true"><span class="promise__bar"><i></i></span><b class="promise__pct"></b></div>
         </article>
       </div>
     </div>

@@ -977,21 +977,96 @@ summary::-webkit-details-marker { display: none; }
 .hero__promises svg { color: var(--blue-300); flex: none; }
 .is-ready .hero__promises[data-intro] { transition-delay: .65s; }
 .promises { padding: 72px 0 24px; }
+.promises__title { max-width: 18ch; margin: 0 auto; text-align: center; font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 4.4vw, 52px); line-height: 1.06; letter-spacing: -1px; }
+.promises__title em { font-style: italic; color: var(--blue-600); }
 .promise-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 .promise {
-  display: flex; flex-direction: column; gap: 12px; padding: 28px;
-  border-radius: var(--radius-md); background: var(--white); box-shadow: 0 0 0 1px rgba(31,36,48,.06);
+  position: relative; display: flex; flex-direction: column; gap: 10px; padding: 26px 26px 28px; overflow: hidden;
+  border-radius: var(--radius-md); background: var(--white); box-shadow: 0 0 0 1px rgba(31,36,48,.07);
+  transition: box-shadow .4s var(--ease-out), transform .4s var(--ease-out);
 }
-.promise .icon-box { margin-bottom: 6px; }
-.promise__title { font-size: 21px; line-height: 1.2; font-weight: 500; letter-spacing: -.2px; }
+.promise:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(63,127,232,.25), 0 18px 40px -24px rgba(31,36,48,.35); }
+.promise__num { position: absolute; top: 18px; right: 22px; font-family: var(--serif); font-size: 40px; line-height: 1; letter-spacing: -1px; color: transparent; -webkit-text-stroke: 1px rgba(63,127,232,.45); }
+.promise__scene { display: block; width: 100%; max-width: 190px; height: 92px; margin: 2px 0 10px -6px; overflow: visible; }
+.promise__title { font-size: 20px; line-height: 1.22; font-weight: 500; letter-spacing: -.2px; }
 .promise__text { font-size: 15px; line-height: 1.5; color: var(--muted-light); }
-.promise--track { background: var(--dark); color: var(--light); box-shadow: 0 0 25px 0 var(--glow); }
+
+/* 01 — the report is written line by line, then sealed */
+.pm-page { fill: var(--light); stroke: rgba(31,36,48,.18); stroke-width: 1.2; }
+.pm-line { fill: none; stroke: var(--blue-500); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 32; stroke-dashoffset: 32; }
+.pm-seal circle { fill: var(--blue-600); }
+.pm-seal path { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pm-seal { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.promise-grid.is-visible .pm-line { animation: pmWrite 6s var(--ease-out) infinite; }
+.promise-grid.is-visible .pm-line--2 { animation-delay: .25s; } .promise-grid.is-visible .pm-line--3 { animation-delay: .5s; } .promise-grid.is-visible .pm-line--4 { animation-delay: .75s; }
+.promise-grid.is-visible .pm-seal { animation: pmSeal 6s cubic-bezier(.34,1.56,.64,1) infinite; }
+@keyframes pmWrite { 0% { stroke-dashoffset: 32; opacity: 1; } 20%, 88% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pmSeal { 0%, 30% { opacity: 0; transform: translate(98px, 66px) scale(.3) rotate(-25deg); } 38%, 88% { opacity: 1; transform: translate(98px, 66px) scale(1) rotate(0); } 100% { opacity: 0; transform: translate(98px, 66px); } }
+
+/* 02 — the lock closes, the temporary access runs out around it */
+.pm-timer-track { fill: none; stroke: var(--grey-2); stroke-width: 3; }
+.pm-timer { fill: none; stroke: var(--blue-500); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: 0; }
+.pm-shackle { fill: none; stroke: var(--dark); stroke-width: 3.2; stroke-linecap: round; transform: translateY(-7px); }
+.pm-body { fill: var(--dark); }
+.pm-keyhole { fill: var(--blue-300); }
+.promise-grid.is-visible .pm-shackle { animation: pmShackle 6s var(--ease-out) infinite; }
+.promise-grid.is-visible .pm-timer { animation: pmTimer 6s linear infinite; }
+.promise-grid.is-visible .pm-keyhole { animation: pmKey 6s ease-out infinite; }
+@keyframes pmShackle { 0%, 10% { transform: translateY(-7px); } 18%, 92% { transform: none; } 100% { transform: translateY(-7px); } }
+@keyframes pmTimer { 0%, 18% { stroke-dashoffset: 0; } 86% { stroke-dashoffset: 1; } 100% { stroke-dashoffset: 1; } }
+@keyframes pmKey { 0%, 16% { fill: var(--blue-300); } 20%, 84% { fill: #8fe3b8; } 90%, 100% { fill: var(--blue-300); } }
+
+/* 03 — three services, then one shorter pack bar: the saving is the gap */
+.pm-seg { fill: var(--grey-2); }
+.pm-pack { fill: var(--blue-500); transform-box: fill-box; transform-origin: left center; transform: scaleX(0); }
+.pm-gap { fill: none; stroke: var(--blue-500); stroke-width: 1.5; stroke-dasharray: 2 4; stroke-linecap: round; opacity: 0; }
+.pm-euro { font-family: var(--serif); font-size: 17px; fill: var(--blue-600); opacity: 0; }
+.promise-grid.is-visible .pm-seg { animation: pmSeg 6s var(--ease-out) infinite; }
+.promise-grid.is-visible .pm-seg--2 { animation-delay: .12s; } .promise-grid.is-visible .pm-seg--3 { animation-delay: .24s; }
+.promise-grid.is-visible .pm-pack { animation: pmPack 6s var(--ease-out) infinite; }
+.promise-grid.is-visible :is(.pm-gap, .pm-euro) { animation: pmGap 6s ease-out infinite; }
+@keyframes pmSeg { 0% { opacity: 0; transform: translateY(6px); } 10%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes pmPack { 0%, 22% { transform: scaleX(0); opacity: 1; } 42%, 90% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes pmGap { 0%, 42% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 04 — client area: four steps light up, the percentage counts to 100 */
+@property --pm-pct { syntax: '<integer>'; inherits: false; initial-value: 0; }
+.promise--track { color: var(--light); box-shadow: 0 0 25px 0 var(--glow);
+  background-color: var(--dark);
+  background-image:
+    radial-gradient(1px 1px at 18% 24%, rgba(255,255,255,.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 18%, rgba(255,255,255,.4) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 86% 62%, rgba(255,255,255,.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 78%, rgba(255,255,255,.3) 50%, transparent 51%),
+    radial-gradient(70% 60% at 50% 120%, rgba(70,135,240,.45), rgba(70,135,240,0)); }
 .promise--track .promise__text { color: var(--muted-dark); }
+.promise--track .promise__num { -webkit-text-stroke-color: rgba(207,224,250,.5); }
+.promise__steps { display: flex; align-items: center; gap: 0; height: 92px; padding-left: 6px; }
+.promise__steps i { position: relative; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.35); background: var(--dark); flex: none; }
+.promise__steps i + i { margin-left: 28px; }
+.promise__steps i + i::before { content: ''; position: absolute; right: 100%; top: 50%; width: 28px; height: 1.5px; margin-right: 1.5px; background: rgba(255,255,255,.2); }
+.promise-grid.is-visible .promise__steps i { animation: pmStep 6s ease-out infinite; }
+.promise-grid.is-visible .promise__steps i:nth-child(2) { animation-delay: .7s; }
+.promise-grid.is-visible .promise__steps i:nth-child(3) { animation-delay: 1.4s; }
+.promise-grid.is-visible .promise__steps i:nth-child(4) { animation-delay: 2.1s; }
+@keyframes pmStep { 0%, 5% { border-color: rgba(255,255,255,.35); background: var(--dark); box-shadow: none; } 10%, 80% { border-color: var(--blue-300); background: var(--blue-300); box-shadow: 0 0 12px rgba(124,180,255,.7); } 95%, 100% { border-color: rgba(255,255,255,.35); background: var(--dark); box-shadow: none; } }
 .promise__progress { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 8px; }
-.promise__progress b { font-family: var(--serif); font-size: 28px; font-weight: 400; line-height: 1; color: var(--blue-300); }
+.promise__progress b { min-width: 3.4ch; text-align: right; font-family: var(--serif); font-size: 30px; font-weight: 400; line-height: 1; color: var(--blue-300); counter-reset: pct var(--pm-pct); }
+.promise__progress b::after { content: counter(pct) '%'; }
 .promise__bar { flex: 1; height: 6px; border-radius: 99px; background: var(--dark-line); overflow: hidden; }
-.promise__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--blue-300)); transform-origin: 0 50%; transform: scaleX(.08); transition: transform 2.6s var(--ease-out) .4s; }
-.promise-grid.is-visible .promise__bar i, .promise-grid:not([data-reveal]) .promise__bar i { transform: scaleX(1); }
+.promise__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--blue-300)); transform-origin: 0 50%; transform: scaleX(0); }
+.promise-grid.is-visible .promise__bar i { animation: pmBar 6s var(--ease-out) infinite; }
+.promise-grid.is-visible .promise__pct { animation: pmPct 6s var(--ease-out) infinite; }
+@keyframes pmBar { 0% { transform: scaleX(0); opacity: 1; } 45%, 92% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: .4; } }
+@keyframes pmPct { 0% { --pm-pct: 0; } 45%, 100% { --pm-pct: 100; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .promise-grid .promise *, .promise-grid .promise *::before { animation: none !important; }
+  .pm-line { stroke-dashoffset: 0; } .pm-seal { opacity: 1; transform: translate(98px, 66px); }
+  .pm-shackle { transform: none; } .pm-pack { transform: none; } .pm-gap, .pm-euro { opacity: 1; }
+  .promise__steps i { border-color: var(--blue-300); background: var(--blue-300); }
+  .promise__bar i { transform: none; } .promise__pct { --pm-pct: 100; }
+}
 
 /* --- live icons (commitments, "why it matters", audiences): each glyph moves according to its meaning --- */
 .icon-box--live { background-size: 220% 100%; animation: liShimmer 4.5s linear infinite; }
