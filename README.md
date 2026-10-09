@@ -77,7 +77,7 @@ Acheter exige un compte du portail : le paiement est rattaché à un **client St
 2. `POST /api/checkout` vérifie le jeton (`verifyCheckoutToken`). Sans jeton valide, il redirige vers la connexion et ne crée rien dans Stripe. Il retrouve ou crée le client Stripe (`stripe-customer.js`), puis crée la Checkout Session.
 3. Tant que `PORTAL_URL` et `PORTAL_SIGNING_SECRET` ne sont pas définis (développement local), le paiement sans compte fonctionne comme avant.
 
-**Côté portail** : le point d'entrée n'existe pas encore dans `stanza-portal`. Le code prêt à copier (route, test) est dans `docs/portal/` : copier `checkout-token-route.ts` vers `src/app/api/checkout-token/route.ts` et `checkout-token.test.mjs` vers `tests/`, puis déployer le portail **avant** ce site, sinon chaque achat échoue.
+**Côté portail** : le point d'entrée n'existe pas encore dans `stanza-portal`. Le code prêt à copier est dans `docs/portal/` (consignes : `docs/portal/LISEZ-MOI.md`) : copier `checkout-token-route.ts` vers `src/app/api/checkout-token/route.ts` et `checkout-token.test.mjs` vers `tests/`, puis déployer le portail **avant** ce site, sinon chaque achat échoue.
 
 ## Mise en route
 
