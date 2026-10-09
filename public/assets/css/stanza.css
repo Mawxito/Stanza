@@ -2751,3 +2751,69 @@ html[data-theme="dark"] .acct-menu__who b { color: var(--light); }
 html[data-theme="dark"] .acct-menu__item:hover { background: rgba(124,180,255,.1); }
 html[data-theme="dark"] .acct-menu__item--out:hover { background: rgba(240,122,106,.12); }
 @media (prefers-reduced-motion: reduce) { .acct-menu, .acct-menu.is-closing { animation: none; } }
+
+/* ==========================================================================
+   Who it's for — « Pourquoi c'est important » : three rules, one animated scene each (6 s loops)
+   ========================================================================== */
+.rules__title { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 4.2vw, 50px); line-height: 1.06; letter-spacing: -1px; max-width: 20ch; }
+.rules__title em { font-style: italic; color: var(--blue-600); }
+.rules__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.rule-card { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 26px 26px 30px; overflow: hidden; border-radius: var(--radius-md); color: var(--light);
+  background-color: var(--dark); box-shadow: 0 0 25px 0 var(--glow);
+  background-image:
+    radial-gradient(1px 1px at 16% 20%, rgba(255,255,255,.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 14%, rgba(255,255,255,.4) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 58%, rgba(255,255,255,.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 34% 82%, rgba(255,255,255,.3) 50%, transparent 51%),
+    radial-gradient(80% 55% at 50% 125%, rgba(70,135,240,.42), rgba(70,135,240,0)); }
+.rule-card__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rule-card__label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; color: var(--blue-300); }
+.rule-card__since { padding: 3px 10px; border-radius: 99px; font-size: 12px; color: var(--blue-100); border: 1px solid rgba(124,180,255,.3); background: rgba(124,180,255,.08); white-space: nowrap; }
+.rule-card__scene { display: block; width: 100%; height: auto; margin: 10px 0 6px; overflow: visible; }
+.rule-card__key { font-family: var(--serif); font-weight: 400; font-variation-settings: "opsz" 72; font-size: 30px; line-height: 1.06; letter-spacing: -.6px; }
+.rule-card__text { font-size: 15px; line-height: 1.55; color: var(--muted-dark); }
+
+/* Inboxes: the three records light up, then the email reaches the inbox */
+.sk-rec rect { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.22); stroke-width: 1; }
+.sk-rec text { font: 600 10.5px/1 var(--sans, sans-serif); letter-spacing: .6px; fill: var(--muted-dark); text-anchor: middle; }
+.sk-lane { fill: none; stroke: rgba(255,255,255,.16); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
+.sk-mail rect { fill: var(--light); } .sk-mail path { fill: none; stroke: var(--dark); stroke-width: 1.6; stroke-linejoin: round; }
+.sk-mail { transform: translate(30px, 70px); opacity: 0; }
+.sk-inbox path { fill: none; stroke: var(--blue-300); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rules__grid.is-visible .sk-rec rect { animation: skRec 6s ease-out infinite; }
+.rules__grid.is-visible .sk-rec text { animation: skRecText 6s ease-out infinite; }
+.rules__grid.is-visible .sk-rec--2 :is(rect, text) { animation-delay: .35s; }
+.rules__grid.is-visible .sk-rec--3 :is(rect, text) { animation-delay: .7s; }
+.rules__grid.is-visible .sk-mail { animation: skMail 6s cubic-bezier(.65,0,.35,1) infinite; }
+.rules__grid.is-visible .sk-inbox path { animation: skInbox 6s ease-out infinite; }
+@keyframes skRec { 0%, 8% { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.22); } 14%, 88% { fill: rgba(143,227,184,.14); stroke: #8fe3b8; } 100% { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.22); } }
+@keyframes skRecText { 0%, 8% { fill: var(--muted-dark); } 14%, 88% { fill: #8fe3b8; } 100% { fill: var(--muted-dark); } }
+@keyframes skMail { 0%, 30% { transform: translate(30px, 70px); opacity: 0; } 36% { opacity: 1; } 62% { transform: translate(206px, 70px) scale(.9); opacity: 1; } 68%, 100% { transform: translate(206px, 74px) scale(.4); opacity: 0; } }
+@keyframes skInbox { 0%, 60% { stroke: var(--blue-300); filter: none; } 66%, 88% { stroke: #8fe3b8; filter: drop-shadow(0 0 6px rgba(143,227,184,.7)); } 100% { stroke: var(--blue-300); } }
+
+/* Accessibility: keyboard focus moves down the page to the pay button */
+.sk-page { fill: rgba(255,255,255,.04); stroke: rgba(255,255,255,.18); stroke-width: 1; }
+.sk-row { fill: rgba(255,255,255,.2); }
+.sk-pay { fill: var(--blue-500); }
+.sk-focus { fill: none; stroke: var(--blue-300); stroke-width: 2; filter: drop-shadow(0 0 5px rgba(124,180,255,.75)); }
+
+/* Cookies: trackers stopped by a consent switch that stays off */
+.sk-82 { font-family: var(--serif); font-size: 84px; text-anchor: end; fill: none; stroke: rgba(207,224,250,.18); stroke-width: 1; }
+.sk-dot { fill: #f5c542; transform-box: fill-box; transform-origin: center; }
+.sk-wall { stroke: rgba(255,255,255,.22); stroke-width: 1.5; stroke-dasharray: 3 5; stroke-linecap: round; }
+.sk-toggle rect { fill: rgba(255,255,255,.12); stroke: rgba(255,255,255,.35); stroke-width: 1; }
+.sk-toggle circle { fill: var(--light); }
+.rules__grid.is-visible .sk-dot { animation: skDot 3s cubic-bezier(.5,0,.75,0) infinite; }
+.rules__grid.is-visible .sk-dot--2 { animation-delay: .5s; } .rules__grid.is-visible .sk-dot--3 { animation-delay: 1s; }
+.rules__grid.is-visible .sk-wall { animation: skWall 1.5s ease-out infinite; }
+@keyframes skDot { 0% { transform: translateX(0); opacity: 0; } 12% { opacity: 1; } 70% { transform: translateX(62px); opacity: 1; } 78% { transform: translateX(66px) scale(1.6); opacity: 0; } 100% { transform: translateX(66px); opacity: 0; } }
+@keyframes skWall { 0%, 100% { stroke: rgba(255,255,255,.22); } 50% { stroke: rgba(245,197,66,.55); } }
+
+@media (max-width: 960px) { .rules__grid { grid-template-columns: 1fr; } .rule-card__scene { max-width: 360px; } }
+@media (prefers-reduced-motion: reduce) {
+  .rules__grid * { animation: none !important; }
+  .sk-rec rect { fill: rgba(143,227,184,.14); stroke: #8fe3b8; } .sk-rec text { fill: #8fe3b8; }
+  .sk-mail { opacity: 1; transform: translate(150px, 70px); }
+  .sk-dot { transform: translateX(50px); }
+  .sk-focus animate { display: none; }
+}
