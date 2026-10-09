@@ -30,10 +30,43 @@ export async function verifyPortalRequest(env, request, body) {
   const signature = request.headers.get('x-stanza-signature') || '';
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
   if (!/^\d{9,12}$/.test(timestamp) || !(age <= MAX_AGE_S) || !/^[0-9a-f]{64}$/.test(signature)) return false;
-  const expected = await hmacHex(env.PORTAL_SIGNING_SECRET, `${timestamp}.${body}`);
+  return sameHex(await hmacHex(env.PORTAL_SIGNING_SECRET, `${timestamp}.${body}`), signature);
+}
+
+function sameHex(expected, given) {
+  if (expected.length !== given.length) return false;
   let diff = 0; // constant-time comparison
-  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ given.charCodeAt(i);
   return diff === 0;
+}
+
+/**
+ * The signed-in buyer, from the checkout token the portal issues (POST /api/checkout-token) to a
+ * visitor who has a session: `<base64url(JSON)>.<hex HMAC-SHA256 of "checkout.<base64url>">`,
+ * valid ten minutes. The "checkout." prefix keeps it from being confused with an intake signature.
+ * Returns { uid, email, name, company, locale } or null (missing, forged, expired).
+ */
+export async function verifyCheckoutToken(env, token) {
+  if (!env.PORTAL_SIGNING_SECRET || typeof token !== 'string' || token.length > 2000) return null;
+  const [body, signature] = token.split('.');
+  if (!body || !/^[0-9a-f]{64}$/.test(signature || '') || !/^[A-Za-z0-9_-]+$/.test(body)) return null;
+  if (!sameHex(await hmacHex(env.PORTAL_SIGNING_SECRET, `checkout.${body}`), signature)) return null;
+  let data;
+  try {
+    const bin = atob(body.replace(/-/g, '+').replace(/_/g, '/'));
+    data = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+  } catch (_) {
+    return null;
+  }
+  if (!data || data.v !== 1 || !(data.exp > Date.now() / 1000)) return null;
+  if (typeof data.uid !== 'string' || !/^[\w-]{8,64}$/.test(data.uid) || typeof data.email !== 'string' || !/^[^\s@]+@[^\s@]+$/.test(data.email)) return null;
+  return {
+    uid: data.uid,
+    email: data.email.slice(0, 254),
+    name: typeof data.name === 'string' ? data.name.slice(0, 200) : '',
+    company: typeof data.company === 'string' ? data.company.slice(0, 200) : '',
+    locale: data.locale === 'en' ? 'en' : 'fr',
+  };
 }
 
 export async function sendToPortal(env, path, payload) {

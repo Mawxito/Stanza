@@ -699,19 +699,67 @@
 
   // Checkout forms POST to /api/checkout (Cloudflare Pages Function → Stripe Checkout).
   // Forms and prices are rendered server-side from functions/_lib/catalog.js.
+  // Buying requires a portal account. On submit the visitor's session asks the portal for a short-lived
+  // signed checkout token (their name and e-mail), sent along with the form: the server uses it to create
+  // their Stripe customer. Signed out: back to the portal's sign-in, then to this offer (?next=).
+  // Without JavaScript the server itself sends a visitor with no token to sign in.
   $$('[data-checkout]').forEach(function (form) {
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (e) {
       var btn = form.querySelector('button');
-      if (!btn) return;
-      btn.setAttribute('data-label', btn.textContent);
-      btn.disabled = true;
-      btn.setAttribute('aria-busy', 'true');
-      btn.textContent = T.redirect;
+      var wait = function () {
+        if (!btn) return;
+        btn.setAttribute('data-label', btn.textContent);
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = T.redirect;
+      };
+      var release = function () {
+        if (!btn) return;
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        btn.textContent = btn.getAttribute('data-label') || btn.textContent;
+      };
+      var field = form.querySelector('input[name="ct"]');
+      if (field && field.value) { wait(); return; } // token already attached: let the form go
+      if (!window.fetch) { wait(); return; }          // old browser: the server handles the sign-in
+      e.preventDefault();
+      wait();
+      var plan = (form.querySelector('input[name="plan"]') || {}).value || '';
+      var toLogin = function () {
+        var here = location.href.split('#')[0] + (plan ? '#' + plan : '');
+        location.href = PORTAL + '/login?next=' + encodeURIComponent(here) + '&' + LANG_QS;
+      };
+      var fail = function () {
+        release();
+        var checkoutError = $('[data-checkout-error]');
+        if (checkoutError) { checkoutError.hidden = false; checkoutError.scrollIntoView({ block: 'center' }); }
+        else location.href = '/pricing?checkout=error' + (plan ? '#' + plan : '');
+      };
+      fetch(PORTAL + '/api/checkout-token', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+        .then(function (r) {
+          if (r.status === 401) { toLogin(); return null; }
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          if (!data.token) throw new Error('no token');
+          if (!field) {
+            field = document.createElement('input');
+            field.type = 'hidden';
+            field.name = 'ct';
+            form.appendChild(field);
+          }
+          field.value = data.token;
+          form.submit(); // programmatic submit: does not fire this handler again
+        })
+        .catch(fail);
     });
   });
   // Re-enable buttons when the buyer comes back from Checkout with the Back button.
   window.addEventListener('pageshow', function (e) {
     if (!e.persisted) return;
+    $$('[data-checkout] input[name="ct"]').forEach(function (input) { input.value = ''; }); // tokens are short-lived
     $$('[data-checkout] button[aria-busy]').forEach(function (btn) {
       btn.disabled = false;
       btn.removeAttribute('aria-busy');

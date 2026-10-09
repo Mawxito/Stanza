@@ -69,6 +69,16 @@ Le choix Standard / Express / Flash en haut de la page Tarifs bascule tous les p
 4. Stripe renvoie le client sur `/success?session_id=…`, qui transmet l'ID au formulaire d'onboarding Tally (champ caché `session_id`).
 5. Le **webhook** (et non la page de succès) envoie chaque commande et chaque événement de paiement au **portail Stanza** (requête signée) dès que `PORTAL_URL` et `PORTAL_SIGNING_SECRET` sont définis : la commande, le compte client et la liste des éléments à fournir y sont créés. Sans ces secrets, l'ancien comportement s'applique : il stocke la commande dans le KV `ORDERS` s'il est lié, et l'envoie en JSON à `ORDER_NOTIFY_URL` (Slack, Make, Zapier…) si elle est définie.
 
+## Connexion obligatoire avant de payer
+
+Acheter exige un compte du portail : le paiement est rattaché à un **client Stripe** créé à partir de ce compte (nom, e-mail, société), réutilisé à chaque commande, avec l'identifiant du compte dans `metadata.portal_user` et `client_reference_id`. Checkout s'ouvre avec l'e-mail verrouillé et l'adresse et le numéro de TVA enregistrés sur la fiche.
+
+1. Au clic sur un bouton d'offre, `main.js` demande au portail `POST /api/checkout-token` (cookies de session, CORS limité au site). Le portail répond `{ token }` : `base64url(JSON {v, uid, email, name, company, locale, exp})` + `.` + HMAC-SHA256 hex de `checkout.<base64url>` avec `INTAKE_SIGNING_SECRET`, valable 10 minutes. Si le visiteur n'est pas connecté (401), il est envoyé à `portail/login?next=<offre>` puis revient sur l'offre.
+2. `POST /api/checkout` vérifie le jeton (`verifyCheckoutToken`). Sans jeton valide, il redirige vers la connexion et ne crée rien dans Stripe. Il retrouve ou crée le client Stripe (`stripe-customer.js`), puis crée la Checkout Session.
+3. Tant que `PORTAL_URL` et `PORTAL_SIGNING_SECRET` ne sont pas définis (développement local), le paiement sans compte fonctionne comme avant.
+
+**Côté portail** : le point d'entrée n'existe pas encore dans `stanza-portal`. Le code prêt à copier (route, test) est dans `docs/portal/` : copier `checkout-token-route.ts` vers `src/app/api/checkout-token/route.ts` et `checkout-token.test.mjs` vers `tests/`, puis déployer le portail **avant** ce site, sinon chaque achat échoue.
+
 ## Mise en route
 
 ### 1. Stripe
@@ -107,7 +117,7 @@ Une promotion ne crée aucun prix Stripe : la ligne de paiement porte le prix re
 
 **Pages légales** : le lien « Confidentialité et conditions » du footer (et les liens Mentions légales / Confidentialité / CGV) mène à `PORTAL_URL/legal?lang=<langue de la page>` (attribut `data-portal-href`, réécrit par le middleware).
 
-**Factures** : chaque paiement génère une facture Stripe (`invoice_creation`), listée dans le portail (Admin → Factures). Stripe facture ce service à part ; pour le couper, ajoutez la variable `STRIPE_INVOICES=off` dans Cloudflare Pages.
+**Factures** : Stripe refuse `invoice_creation` quand la carte est seulement autorisée (`CAPTURE_METHOD = "manual"`, le réglage par défaut) : **aucune facture Stripe n'est alors créée automatiquement pour les offres de la boutique**. Elles ne le sont qu'avec `CAPTURE_METHOD = "automatic"`, et pour les devis du portail (débités immédiatement). Avec la capture manuelle, émettez la facture après la capture (Dashboard Stripe → Factures, ou depuis le portail). Pour couper les factures Stripe dans tous les cas, ajoutez `STRIPE_INVOICES=off` dans Cloudflare Pages.
 
 **Conservation** : les données d'une commande sont supprimées 30 jours après sa clôture (ou plus tôt par l'admin) ; la page de succès et la FAQ tarifs le rappellent au client.
 

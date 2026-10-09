@@ -2,6 +2,9 @@
 //   plan:  a catalog key (consent, inbox, pack-complete…)
 //   speed: standard | express | flash
 //   lang:  fr | en (language of the Stripe Checkout page)
+//   ct:    checkout token of the signed-in buyer, issued by the portal (POST /api/checkout-token)
+// Buying requires a portal account: the token carries the buyer's details, which create (or reuse) their
+// Stripe customer and prefill Checkout. Without a valid token the buyer is sent to sign in, then comes back.
 // Creates a Stripe Checkout Session and redirects the buyer to it.
 // Price and availability come from the portal (live catalog), read again here, server side:
 // the amount posted by the browser is never trusted. During a promotion (set in the portal) the
@@ -10,6 +13,8 @@ import { TIERS, effectiveTier, activePromo } from '../_lib/catalog.js';
 import { formatPrice, discountText, promoUntil } from '../_lib/render.js';
 import { getCatalogFresh } from '../_lib/live-catalog.js';
 import { getStripe, lineItem, captureMethod } from '../_lib/stripe.js';
+import { portalConfigured, portalOrigin, verifyCheckoutToken } from '../_lib/portal.js';
+import { ensureCustomer } from '../_lib/stripe-customer.js';
 
 // Label shown in the Dashboard to compare checkout flows.
 const INTEGRATION_IDENTIFIER = 'stanza_pricing_qhtzmwkr';
@@ -45,6 +50,14 @@ export async function onRequestPost({ request, env }) {
   const field = (name) => (form ? String(form.get(name) || '') : '');
   const plan = field('plan');
   const lang = field('lang') === 'fr' ? 'fr' : 'en';
+
+  // Sign-in first. Until the portal is wired (no PORTAL_URL / PORTAL_SIGNING_SECRET, e.g. local
+  // development) the previous guest checkout still works.
+  const buyer = portalConfigured(env) ? await verifyCheckoutToken(env, field('ct')) : null;
+  if (portalConfigured(env) && !buyer) {
+    const back = `${origin}/pricing${/^[a-z-]{1,40}$/.test(plan) ? `#${plan}` : ''}`;
+    return Response.redirect(`${portalOrigin(env)}/login?next=${encodeURIComponent(back)}&lang=${lang}`, 303);
+  }
   const catalog = await getCatalogFresh(env);
   const item = catalog.byKey[plan];
   if (!item || item.active === false || item.quote) return Response.redirect(`${origin}/pricing`, 303);
@@ -60,12 +73,15 @@ export async function onRequestPost({ request, env }) {
     description: PROMO_TEXT[lang](formatPrice(item.regular[speed], lang), promo.label[lang], discountText(promo, lang), promoUntil(promo, lang)),
   };
   // metadata.promo: the promotion behind the price, on the session and the payment.
-  const metadata = promo ? { plan, speed, promo: promo.id } : { plan, speed };
+  // metadata.portal_user: the buyer's portal account.
+  const metadata = { plan, speed, ...(promo ? { promo: promo.id } : {}), ...(buyer ? { portal_user: buyer.uid } : {}) };
 
   try {
     const stripe = getStripe(env);
     const line = await lineItem(stripe, item, speed, amount, promoLine);
     const speedLabel = SPEED_LABEL[lang][speed](item.days);
+    // The buyer's Stripe customer (one per portal account), so their details are on the payment and the invoice.
+    const customer = buyer ? await ensureCustomer(stripe, { ...buyer, locale: lang }) : null;
 
     const params = {
       mode: 'payment',
@@ -73,7 +89,9 @@ export async function onRequestPost({ request, env }) {
       line_items: [line],
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing#${plan}`,
-      customer_creation: 'always',
+      // Signed in: the existing customer, whose name and address Checkout keeps up to date (needed to collect a
+      // VAT number on an existing customer). Guest (portal not wired): Checkout creates the customer.
+      ...(customer ? { customer, customer_update: { name: 'auto', address: 'auto' }, client_reference_id: buyer.uid } : { customer_creation: 'always' }),
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
       custom_text: { submit: { message: item.group === 'packs' ? PACK_NOTE[lang] : DELAY_NOTE[lang](speedLabel, lang === 'fr' ? LATE_REFUND[speed] : LATE_REFUND[speed].replace(' ', '')) } },
@@ -92,9 +110,11 @@ export async function onRequestPost({ request, env }) {
       integration_identifier: INTEGRATION_IDENTIFIER,
     };
     // Stripe invoice after payment (listed in the portal, Admin → Invoices). STRIPE_INVOICES=off disables it.
+    // Stripe refuses invoice_creation when the card is only authorized (capture_method manual), so it is only
+    // asked for with automatic capture; with manual capture the invoice has to be issued after the capture.
     // If Stripe refuses the option for this payment, the session is created again without it: checkout never breaks.
     let session;
-    if (env.STRIPE_INVOICES !== 'off') {
+    if (env.STRIPE_INVOICES !== 'off' && captureMethod(env) === 'automatic') {
       try {
         session = await stripe.checkout.sessions.create({
           ...params,
