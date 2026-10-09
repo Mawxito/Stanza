@@ -37,6 +37,8 @@ functions/journal/            Routes /journal et /journal/<slug>
 functions/_lib/i18n.js        Choix de la langue (pays, cookie, ?lang=)
 functions/api/checkout.js     POST /api/checkout → crée la Checkout Session Stripe
 functions/api/stripe-webhook.js  POST /api/stripe-webhook → traitement des commandes
+functions/api/sync-prices.js  POST /api/sync-prices → le portail y signale un changement de prix, Stripe est mis à jour
+functions/_lib/stripe-sync.js Synchronisation produits / prix Stripe (script, portail et paiement)
 scripts/setup-stripe.mjs      Crée/met à jour produits et prix dans Stripe
 scripts/check-i18n.mjs        Vérifie qu'aucun texte n'est sans traduction
 wrangler.toml                 Config Cloudflare Pages
@@ -93,6 +95,11 @@ STRIPE_SECRET_KEY=rk_test_... npm run stripe:setup   # crée les 8 produits et 1
 « Log in » et « Get started » mènent à `https://portail.stanzafix.com/login` et `/signup` ; les anciennes adresses `/login` et `/signup` du site y redirigent (`functions/_middleware.js`). Après paiement, `success.html` envoie le client vers son espace (`/client`).
 
 **Catalogue piloté depuis le portail** : prix, description et disponibilité de chaque offre (Admin → Services & modèles) sont lus sur `PORTAL_URL/api/catalog`, gardés une minute, et utilisés pour l'affichage comme pour le paiement. Prix vide = vitesse non proposée (le site affiche l'option la plus proche avec une note rouge) ; offre inactive = retirée du site et refusée au paiement. Si le portail ne répond pas, `functions/_lib/catalog.js` sert de secours.
+
+**Prix du portail → Stripe** : Stripe garde toujours le prix **habituel** de chaque offre et vitesse (produit `metadata.plan`, prix `lookup_key` `stanza_<offre>_<vitesse>`, HT, EUR). Quand un admin change un prix dans le portail, Stripe suit de deux façons :
+1. **Immédiatement** : le portail envoie `POST https://stanzafix.com/api/sync-prices` (corps libre, ex. `{}`), signé comme ses autres échanges (en-têtes `x-stanza-timestamp` et `x-stanza-signature` = HMAC-SHA256 hex de `${timestamp}.${corps}` avec `INTAKE_SIGNING_SECRET`, moins de 5 minutes). Le site relit lui-même `PORTAL_URL/api/catalog` (le corps n'est jamais cru), crée le nouveau prix Stripe, archive l'ancien et archive les vitesses retirées. Réponse `{ ok, changed }` ; 503 si le portail ne répond pas (rien n'est alors modifié dans Stripe) ; le portail peut réessayer.
+2. **Au paiement, en filet de sécurité** : si le prix du portail diffère de celui de Stripe, `checkout` crée le nouveau prix Stripe avant d'encaisser (jamais un prix remisé, jamais au détriment de la vente).
+Une promotion ne crée aucun prix Stripe : la ligne de paiement porte le prix remisé, le nom de la promotion et `metadata.promo`. Les offres sur devis (Atelier, Multi-domaines) n'ont pas de prix Stripe.
 
 **Promotions** (Admin → Promotions du portail) : `/api/catalog` envoie alors, pour chaque offre, le prix effectif (déjà remisé) dans `prices`, le prix habituel dans `regular_prices` et la promotion dans `promo` ; la liste `promotions` donne les promotions en cours. Le site barre le prix habituel, affiche un badge (« Soldes d'hiver −20 % », « jusqu'au … ») et, en haut de l'accueil et de la page Tarifs, un bandeau animé avec compte à rebours. Le paiement débite le prix effectif : la ligne Stripe porte le nom de la promotion et `metadata.promo` (identifiant de la promotion) est ajouté à la session et au paiement. La comparaison « en services séparés » des packs compare toujours des prix effectifs entre eux. Un portail qui n'envoie pas ces champs reste compatible (aucune promotion).
 

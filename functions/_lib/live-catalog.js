@@ -129,6 +129,19 @@ export async function getCatalogFresh(env) {
   return current ? current.catalog : STATIC;
 }
 
+/**
+ * The portal's catalog read again right now (the cache is skipped), or null if the portal
+ * could not be reached: nothing is ever synced to Stripe from a stale or fallback catalog.
+ */
+export async function getCatalogNow(env) {
+  if (!env || !env.PORTAL_URL) return null;
+  if (inflight) await inflight; // a load already running may predate the change: read again after it
+  const since = Date.now();
+  inflight = load(env);
+  await inflight;
+  return current && current.at >= since ? current.catalog : null;
+}
+
 /** For /api/portal-status: where the prices shown right now come from. */
 export function catalogStatus(env) {
   return {

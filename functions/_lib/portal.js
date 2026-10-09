@@ -18,6 +18,24 @@ async function hmacHex(secret, message) {
   return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+const MAX_AGE_S = 300;
+
+/**
+ * Checks a request signed by the portal (same scheme as sendToPortal, in the other direction):
+ * hex HMAC-SHA256 of `${timestamp}.${body}`, timestamp at most 5 minutes old.
+ */
+export async function verifyPortalRequest(env, request, body) {
+  if (!env.PORTAL_SIGNING_SECRET) return false;
+  const timestamp = request.headers.get('x-stanza-timestamp') || '';
+  const signature = request.headers.get('x-stanza-signature') || '';
+  const age = Math.abs(Date.now() / 1000 - Number(timestamp));
+  if (!/^\d{9,12}$/.test(timestamp) || !(age <= MAX_AGE_S) || !/^[0-9a-f]{64}$/.test(signature)) return false;
+  const expected = await hmacHex(env.PORTAL_SIGNING_SECRET, `${timestamp}.${body}`);
+  let diff = 0; // constant-time comparison
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function sendToPortal(env, path, payload) {
   if (!portalConfigured(env)) throw new Error('PORTAL_URL / PORTAL_SIGNING_SECRET are not configured');
   const body = JSON.stringify(payload);
