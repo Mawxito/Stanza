@@ -153,7 +153,7 @@
       <div class="rs-hero__text">
         <nav class="rs-crumbs" aria-label="Breadcrumb" data-i18n-attr="aria-label:rs.crumbs" data-intro><a href="/">Stanza</a><span aria-hidden="true">/</span><span data-i18n="nav.resources">Resources</span><span aria-hidden="true">/</span><span aria-current="page" data-i18n="nav.who">Who it's for</span></nav>
         <h1 class="display display--md" data-split data-i18n="rs.who.h1">Whatever your size,<br>the same rules apply.</h1>
-        <p class="hero__lead" data-intro data-i18n="rs.who.lead">Inboxes, regulators and your customers do not grade on company size. Find your situation below: what is at stake, the problems we see most often, and where to start.</p>
+        <p class="hero__lead" data-intro data-i18n="rs.who.lead">Inboxes, regulators and your customers make no difference based on your size. Find your situation below: what is at stake, the problems we see most often, and where to start.</p>
         <div class="rs-hero__actions" data-intro><a class="btn btn--light" href="#profiles"><span data-i18n="rs.who.find">Find my profile</span></a><a class="btn btn--outline-light" href="/pricing"><span data-i18n="aud.cta2">See offers &amp; pricing</span></a></div>
         
       </div>
@@ -172,31 +172,62 @@
     </div>
   </section>
   <div class="rs-body">
-  <section class="rs-section ">
+  <!-- Why it matters: three rules, each with its own small animated scene (SVG + CSS, started when the
+       grid comes into view, frozen for visitors who reduce motion): SPF, DKIM and DMARC lighting up before
+       the email reaches the inbox; keyboard focus moving through a page down to the pay button; trackers
+       stopped by a consent switch that stays off. -->
+  <section class="rs-section rules">
     <div class="container container--md">
-      <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="aud.eyebrow">Why it matters</p><h2 class="h2" data-i18n="aud.title">Large or small, the rules and the stakes are the same</h2><p class="body-lg" data-i18n="aud.lead">Inboxes, regulators and your customers do not grade on company size. What changes is what a mistake costs you.</p></div>
-      <div class="rs-grid rs-grid--3" data-reveal>
-      <article class="rs-card rs-card--dark">
-        <p class="rs-card__label" data-i18n="aud.s1.l">Inboxes</p><p class="rs-card__key" data-i18n="aud.s1.k">Authentication required</p>
-        <p class="rs-card__text" data-i18n="aud.s1">Since February 2024, Gmail and Yahoo require SPF, DKIM and DMARC from bulk senders, and Outlook followed in 2025. Unauthenticated mail is filtered or rejected.</p>
-        
-      </article>
-      <article class="rs-card rs-card--dark">
-        <p class="rs-card__label" data-i18n="aud.s2.l">Accessibility</p><p class="rs-card__key" data-i18n="aud.s2.k">Accessibility required</p>
-        <p class="rs-card__text" data-i18n="aud.s2">Since 28 June 2025, the European Accessibility Act applies to many online stores in the EU, micro-enterprises aside. Every blocked customer is a lost sale.</p>
-        
-      </article>
-      <article class="rs-card rs-card--dark">
-        <p class="rs-card__label" data-i18n="aud.s3.l">Cookies</p><p class="rs-card__key" data-i18n="aud.s3.k">Article 82</p>
-        <p class="rs-card__text" data-i18n="aud.s3">The CNIL and its European counterparts check websites that drop trackers without consent (Article 82 of the French Data Protection Act, GDPR), and fine organisations of every size, from global groups to small businesses.</p>
-        
-      </article>
-    </div>
+      <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="aud.eyebrow">Why it matters</p><h2 class="rules__title" data-i18n="aud.title">Large or small, <em>the same rules</em></h2><p class="body-lg" data-i18n="aud.lead">Gmail, regulators and your customers do not look at the size of your company. What changes is what a mistake costs you.</p></div>
+      <div class="rules__grid" data-reveal>
+        <article class="rule-card rule-card--mail">
+          <p class="rule-card__top"><span class="rule-card__label" data-i18n="aud.s1.l">Inboxes</span><span class="rule-card__since" data-i18n="aud.s1.d">February 2024</span></p>
+          <svg class="rule-card__scene" viewBox="0 0 240 96" aria-hidden="true">
+            <g class="sk-rec sk-rec--1"><rect x="6" y="12" width="56" height="22" rx="11"/><text x="34" y="27">SPF</text></g>
+            <g class="sk-rec sk-rec--2"><rect x="68" y="12" width="62" height="22" rx="11"/><text x="99" y="27">DKIM</text></g>
+            <g class="sk-rec sk-rec--3"><rect x="136" y="12" width="70" height="22" rx="11"/><text x="171" y="27">DMARC</text></g>
+            <path class="sk-lane" d="M16 70h168"/>
+            <g class="sk-mail"><rect x="-15" y="-10" width="30" height="20" rx="3"/><path d="m-13-8 13 10 13-10"/></g>
+            <g class="sk-inbox" transform="translate(206 70)"><path d="M-18-6v14h36v-14"/><path d="M-18-6h9l3 5h12l3-5h9"/></g>
+          </svg>
+          <h3 class="rule-card__key" data-i18n="aud.s1.k">No authentication, no inbox</h3>
+          <p class="rule-card__text" data-i18n="aud.s1">Since February 2024, Gmail and Yahoo ask every bulk sender for SPF, DKIM and DMARC, and Outlook followed in 2025. Without them, your emails end up in spam or are not delivered at all.</p>
+        </article>
+        <article class="rule-card rule-card--a11y">
+          <p class="rule-card__top"><span class="rule-card__label" data-i18n="aud.s2.l">Accessibility</span><span class="rule-card__since" data-i18n="aud.s2.d">28 June 2025</span></p>
+          <svg class="rule-card__scene" viewBox="0 0 240 96" aria-hidden="true">
+            <rect class="sk-page" x="40" y="4" width="160" height="88" rx="8"/>
+            <rect class="sk-row" x="54" y="18" width="92" height="8" rx="4"/>
+            <rect class="sk-row" x="54" y="36" width="120" height="8" rx="4"/>
+            <rect class="sk-row" x="54" y="54" width="70" height="8" rx="4"/>
+            <rect class="sk-pay" x="132" y="66" width="54" height="16" rx="8"/>
+            <rect class="sk-focus" x="50" y="14" width="100" height="16" rx="8">
+              <animate attributeName="x" dur="6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.2;.3;.45;.55;.7;.8;1" keySplines=".2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1" values="50;50;50;50;50;50;128;128"/>
+              <animate attributeName="y" dur="6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.2;.3;.45;.55;.7;.8;1" keySplines=".2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1" values="14;14;32;32;50;50;62;62"/>
+              <animate attributeName="width" dur="6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.2;.3;.45;.55;.7;.8;1" keySplines=".2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1" values="100;100;128;128;78;78;62;62"/>
+              <animate attributeName="height" dur="6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.2;.3;.45;.55;.7;.8;1" keySplines=".2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1;.2 .7 .3 1" values="16;16;16;16;16;16;24;24"/>
+            </rect>
+          </svg>
+          <h3 class="rule-card__key" data-i18n="aud.s2.k">Accessibility becomes the rule</h3>
+          <p class="rule-card__text" data-i18n="aud.s2">Since 28 June 2025, the European Accessibility Act applies to most online stores in the EU, micro-enterprises aside. A customer who cannot get to the pay button is a lost sale.</p>
+        </article>
+        <article class="rule-card rule-card--cookie">
+          <p class="rule-card__top"><span class="rule-card__label" data-i18n="aud.s3.l">Cookies</span><span class="rule-card__since" data-i18n="aud.s3.d">Regular audits</span></p>
+          <svg class="rule-card__scene" viewBox="0 0 240 96" aria-hidden="true">
+            <text class="sk-82" x="232" y="88">82</text>
+            <circle class="sk-dot sk-dot--1" cx="10" cy="30" r="4.5"/><circle class="sk-dot sk-dot--2" cx="10" cy="50" r="4.5"/><circle class="sk-dot sk-dot--3" cx="10" cy="70" r="4.5"/>
+            <path class="sk-wall" d="M96 18v64"/>
+            <g class="sk-toggle" transform="translate(96 50)"><rect x="-17" y="-10" width="34" height="20" rx="10"/><circle cx="-7" cy="0" r="6.5"/></g>
+          </svg>
+          <h3 class="rule-card__key" data-i18n="aud.s3.k">Article 82</h3>
+          <p class="rule-card__text" data-i18n="aud.s3">The CNIL and its European counterparts check websites that drop trackers without consent, and fine large groups and small businesses alike.</p>
+        </article>
+      </div>
     </div>
   </section>
   <section class="rs-section " id="profiles">
     <div class="container container--md">
-      <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="rs.who.prof.e">Six profiles</p><h2 class="h2" data-i18n="rs.who.prof.t">Where do you recognise yourself?</h2></div>
+      <div class="rs-head" data-reveal><p class="eyebrow eyebrow--light" data-i18n="rs.who.prof.e">Six profiles</p><h2 class="rules__title" data-i18n="rs.who.prof.t">Which one <em>sounds like you?</em></h2></div>
       <nav class="rs-toc" aria-label="Profiles" data-i18n-attr="aria-label:rs.who.prof.e" data-reveal>
         <a href="#large-companies"><span data-i18n="aud.c1.t">Large companies</span></a><a href="#smes"><span data-i18n="aud.c2.t">SMEs</span></a><a href="#online-stores"><span data-i18n="aud.c3.t">Online stores</span></a><a href="#freelancers"><span data-i18n="aud.c4.t">Freelancers &amp; individuals</span></a><a href="#agencies"><span data-i18n="aud.c5.t">Agencies</span></a><a href="#associations"><span data-i18n="aud.c6.t">Associations &amp; startups</span></a>
       </nav>
